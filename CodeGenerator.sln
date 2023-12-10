@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator", "CodeGenerator\CodeGenerator.csproj", "{FEE5A93F-009A-4DBC-9E56-6BD053B73339}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator.Core", "CodeGenerator.Core\CodeGenerator.Core.csproj", "{EB908C4D-49BD-4450-A2E1-C5B65BFDF0CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator.Test.Unit", "CodeGenerator.Test.Unit\CodeGenerator.Test.Unit.csproj", "{E7D7E77E-9D78-4261-85FB-DB41E348CB69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{3F30745D-B066-4E64-B154-D37510B226C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistance", "Persistance\Persistance.csproj", "{30ACDE44-F12D-407A-A160-9307EFB5E46D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator.Web", "CodeGenerator.Web\CodeGenerator.Web.csproj", "{44E531F6-0A72-4009-9B53-DEF2859CB385}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEE5A93F-009A-4DBC-9E56-6BD053B73339}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE5A93F-009A-4DBC-9E56-6BD053B73339}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE5A93F-009A-4DBC-9E56-6BD053B73339}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE5A93F-009A-4DBC-9E56-6BD053B73339}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB908C4D-49BD-4450-A2E1-C5B65BFDF0CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB908C4D-49BD-4450-A2E1-C5B65BFDF0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB908C4D-49BD-4450-A2E1-C5B65BFDF0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB908C4D-49BD-4450-A2E1-C5B65BFDF0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D7E77E-9D78-4261-85FB-DB41E348CB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D7E77E-9D78-4261-85FB-DB41E348CB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D7E77E-9D78-4261-85FB-DB41E348CB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D7E77E-9D78-4261-85FB-DB41E348CB69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F30745D-B066-4E64-B154-D37510B226C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F30745D-B066-4E64-B154-D37510B226C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F30745D-B066-4E64-B154-D37510B226C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F30745D-B066-4E64-B154-D37510B226C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30ACDE44-F12D-407A-A160-9307EFB5E46D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30ACDE44-F12D-407A-A160-9307EFB5E46D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30ACDE44-F12D-407A-A160-9307EFB5E46D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30ACDE44-F12D-407A-A160-9307EFB5E46D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44E531F6-0A72-4009-9B53-DEF2859CB385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44E531F6-0A72-4009-9B53-DEF2859CB385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44E531F6-0A72-4009-9B53-DEF2859CB385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44E531F6-0A72-4009-9B53-DEF2859CB385}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9C716F4B-F480-49FE-9223-4FDDC9A7CCC6}
+	EndGlobalSection
+EndGlobal

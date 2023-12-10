@@ -1,0 +1,38 @@
+﻿@model ApiViewModel
+
+<div class="card mb-3">
+    <div class="card-header">
+        <div class="row flex-between-end">
+            <div class="col-auto align-self-center">
+                <h5 class="mb-0">
+                    <span class="fas fa-list"
+                          data-fa-transform="shrink-3 down-2"></span><span class="ms-1">مدیریت منو روزانه</span>
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body py-0 border-top">
+        <div class="card shadow-none">
+            <div class="card-body p-0 pb-3">
+                <div class="d-flex align-items-center justify-content-start my-3">
+                    <div id="bulk-select-replace-element">
+                        <a class="btn btn-falcon-success btn-sm" href="@Url.Action("Create")">
+                            <span class="fas fa-plus"
+                                  data-fa-transform="shrink-3 down-2"></span><span class="ms-1">جدید</span>
+                        </a>
+                    </div>
+
+                    <div id="bulk-select-replace-element">
+                        <button class="btn btn-falcon-danger btn-sm ms-2" type="button" onclick="deleteDailyMenus()">
+                            <span class="fas fa-trash" data-fa-transform="shrink-3 down-2"></span><span class="ms-1">حذف</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div id="gridPartioal" class="pagedGrid">
+                  @*  @{await Html.RenderPartialAsync("_Grid", Model);}*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
