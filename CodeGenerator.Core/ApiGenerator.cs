@@ -47,37 +47,7 @@ namespace CodeGenerator.Core
             File.WriteAllText(controllerPath, updatedRoot.ToString());
         }
 
-        private static CodeMemberMethod GenerateHttpGetMethod()
-        {
-            CodeMemberMethod method = new CodeMemberMethod();
-            method.Attributes = MemberAttributes.Public | MemberAttributes.Final;
-            method.Name = "Get";
-
-            // Add the [HttpGet] attribute to the method
-            method.CustomAttributes.Add(new CodeAttributeDeclaration(
-                new CodeTypeReference("HttpGetAttribute")
-            ));
-
-            // Add the method body to return an example response
-            method.Statements.Add(new CodeMethodReturnStatement(
-                new CodeObjectCreateExpression("Response", new CodePrimitiveExpression("Sample response"))
-            ));
-
-            return method;
-        }
-
-        private static CodeCompileUnit GenerateCodeCompileUnit(string controllerPath)
-        {
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(controllerPath));
-
-            // Get the root node of the syntax tree
-            var rootNode = syntaxTree.GetRoot();
-
-            var namespaceDeclaration = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-            var classDeclaration = namespaceDeclaration.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
-
-            return new CodeCompileUnit();
-        }
+       
 
         private static List<MethodDeclarationSyntax> GenerateApiMethods(List<CreateApiMethodModel> Apies)
         {
@@ -156,24 +126,7 @@ namespace CodeGenerator.Core
 
     }
 
-    //        var routeAttribute = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Attribute(
-    //SyntaxFactory.ParseName("Route"))
-    //.WithArgumentList(
-    //    SyntaxFactory.ParseAttributeArgumentList(@"( ""Grid"" )"))));
-
-    //        var apiTypeAttribute = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-    //        SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("HttpGet"))));
-
-    //        var methodDeclaration = SyntaxFactory.MethodDeclaration(
-    //            SyntaxFactory.ParseTypeName("Task<IActionResult>"), apiModel.Name)
-    //            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.AsyncKeyword))
-    //            .AddAttributeLists(apiTypeAttribute, routeAttribute)
-    //              .WithBody(
-    //                SyntaxFactory.Block(
-    //                    SyntaxFactory.ParseStatement($"var data = await _mediator.Send(new GetAll{entityName}Query());"),
-    //                    SyntaxFactory.ParseStatement("return Ok(data);")
-
-    //                ));
+    
     public class CreateMethodModel
     {
         public CreateMethodModel()
