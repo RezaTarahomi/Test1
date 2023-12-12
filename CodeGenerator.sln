@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistance", "Persistance\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{9CEECD13-C7EF-40BE-AB88-04F85E1940D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator.Web", "CodeGenerator.Web\CodeGenerator.Web.csproj", "{44E531F6-0A72-4009-9B53-DEF2859CB385}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator.Web", "CodeGenerator.Web\CodeGenerator.Web.csproj", "{44E531F6-0A72-4009-9B53-DEF2859CB385}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A2DE2111-89DC-4995-97FB-F07E98A988BD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{74A4ADE8-3D55-4D52-81EE-D9701C3DD662}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
