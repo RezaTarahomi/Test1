@@ -14,6 +14,6 @@ namespace CodeGenerator.Test.Unit
 
         public static string EntitiesFolder => "Entities";
 
-        public static string ApiPath => "CodeGenerator\\Api";
+        public static string ApiPath => "CodeGenerator\\Apis";
     }
 }

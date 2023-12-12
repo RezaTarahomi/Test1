@@ -81,5 +81,30 @@ namespace CodeGenerator.Core
             return Directory.GetFiles(rootDirectoryPath, fileName, SearchOption.AllDirectories).ToList();
             
         }
+
+        public static string GetPluralForm(string noun)
+        {
+            if (string.IsNullOrEmpty(noun))
+                return noun;
+
+            string pluralForm = noun;
+
+            // Add more rules here for different pluralization patterns
+
+            if (noun.EndsWith("s") || noun.EndsWith("sh") || noun.EndsWith("ch") || noun.EndsWith("x") || noun.EndsWith("z"))
+            {
+                pluralForm += "es"; // For nouns ending with 's', 'sh', 'ch', 'x', or 'z'
+            }
+            else if (noun.EndsWith("y"))
+            {
+                pluralForm = noun.Remove(noun.Length - 1) + "ies"; // For nouns ending with 'y', replace 'y' with 'ies'
+            }
+            else
+            {
+                pluralForm += "s"; // For regular pluralization, just add 's'
+            }
+
+            return pluralForm;
+        }
     }
 }

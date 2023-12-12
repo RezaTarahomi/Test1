@@ -20,12 +20,18 @@ namespace CodeGenerator.Test.Unit
 
             var apiPath = ProjectStructure.ApiPath;
             var controllerPath = Path.Combine(DirectoryHandler.GetAppRoot(), apiPath , controllerName + ".cs");
+                      
 
-            var apiType = "HttpGet";
+            var apiModels = new List<CreateApiMethodModel>
+            {
+                new CreateApiMethodModel
+                {                    
+                    Type = ApiType.GetList,
+                    EntityName = "Vehicle_Test2",
+                }
+            };
 
-
-
-            ApiGenerator.Generate(controllerPath, entityName, apiType);
+            ApiGenerator.Generate(controllerPath, apiModels);
            // ApiGenerator.GenerateDocument(controllerPath, entityName, apiType);
 
             var expectedApi= CodeGeneratorHandler.GetClassMethodNames(controllerPath);

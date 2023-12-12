@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeGenerator.Apis
@@ -8,11 +9,14 @@ namespace CodeGenerator.Apis
     [ApiController]
     public class Vehicle_TestController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         public int _unitOfWork { get; set; }
 
-        public Vehicle_TestController(int unitOfWork)
+        public Vehicle_TestController(int unitOfWork, IMediator mediator)
         {
             _unitOfWork = unitOfWork;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -38,5 +42,7 @@ namespace CodeGenerator.Apis
         {
             return Ok();
         }
+
+        
     }
 }
