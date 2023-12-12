@@ -75,5 +75,11 @@ namespace CodeGenerator.Core
             return views;
 
         }
+
+        public static List<string> FindFilePaths(string rootDirectoryPath, string fileName)
+        {
+            return Directory.GetFiles(rootDirectoryPath, fileName, SearchOption.AllDirectories).ToList();
+            
+        }
     }
 }

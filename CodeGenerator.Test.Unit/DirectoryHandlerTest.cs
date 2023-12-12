@@ -36,5 +36,18 @@ namespace CodeGenerator.Test.Unit
 
             List<FileModel> sut = DirectoryHandler.GetViewFiles(controllerPath);  
         }
+
+        [Fact]
+        public void find_file_path()
+        {
+            var directoryPath = @"E:\DotNetProjects\Test\CodeGenerator";
+
+            var fileName = "Index.cshtml";
+            var filepath = @"E:\DotNetProjects\Test\CodeGenerator\CodeGenerator\Views\Home\Index.cshtml";
+
+            var sut = DirectoryHandler.FindFilePaths(directoryPath, fileName);
+
+            Assert.Contains(filepath, sut);
+        }
     }
 }
