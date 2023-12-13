@@ -13,5 +13,6 @@ namespace CodeGenerator.Core
         public static string Persistance => "Persistance";
 
         public static string EntitiesFolder => "Entities";
+        public static string Id_CaptionPath => "Common";
     }
 }

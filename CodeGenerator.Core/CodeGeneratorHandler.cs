@@ -91,5 +91,7 @@ namespace CodeGenerator.Core
             // Get the root node of the syntax tree
             return syntaxTree.GetRoot();
         }
+
+        
     }
 }
