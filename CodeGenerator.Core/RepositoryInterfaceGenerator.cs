@@ -4,9 +4,9 @@ namespace CodeGenerator.Core
 {
     public class RepositoryInterfaceGenerator
     {
-        public static void Generate(string entityName, string path)
+        public static void Generate(string entityName, string path, string type)
         {
-            var interfaceName = "I" + entityName + "Repository";
+            var interfaceName = "I" + entityName + type;
             // Create a CodeCompileUnit
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 

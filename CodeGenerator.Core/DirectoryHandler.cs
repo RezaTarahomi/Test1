@@ -1,4 +1,7 @@
 ﻿using CodeGenerator.Core.Dtos;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
 
 namespace CodeGenerator.Core
@@ -25,7 +28,7 @@ namespace CodeGenerator.Core
 
         public static string GetNameSpace(string path)
         {
-            var root = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
+            var root = GetAppRoot();
 
             if (path.Last() == '/')
             {
@@ -39,6 +42,16 @@ namespace CodeGenerator.Core
 
             var nameSpace = editedPath.Replace('/', '.');
             return nameSpace;
+
+        }
+
+        public static string? GetClassNameSpace(string path)
+        {
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(path));
+            var rootNode = syntaxTree.GetRoot();
+            var namespaceString = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>()?.Select(x => x.Name.ToString()).FirstOrDefault();
+
+            return namespaceString;
 
         }
 

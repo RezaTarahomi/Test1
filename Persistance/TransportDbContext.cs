@@ -10,5 +10,6 @@ namespace Persistance
             base.OnConfiguring(optionsBuilder);
         }
         public DbSet<Vehicles_Test> Vehicles_Tests { get; set; }
+        
     }
 }

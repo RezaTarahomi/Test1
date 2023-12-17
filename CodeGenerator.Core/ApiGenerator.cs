@@ -1,4 +1,5 @@
 ﻿using CodeGenerator.Core.Dtos;
+using Database.Data.Entities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,32 +38,27 @@ namespace CodeGenerator.Core
 
             foreach (var item in apies)
             {
-                updatedClassDeclaration = classDeclaration.AddMembers(item);
-            }
+                updatedClassDeclaration = classDeclaration.AddMembers(item);            }
 
 
             var updatedSyntaxTree = syntaxTree.WithRootAndOptions(rootNode, syntaxTree.Options);
 
             var updatedRoot = rootNode.ReplaceNode(classDeclaration, updatedClassDeclaration).NormalizeWhitespace();
 
-
-            File.WriteAllText(controllerPath, updatedRoot.ToString());
+            File.WriteAllText(controllerPath, CodeGeneratorHandler.RemoveComment(updatedRoot.ToString()));
         }
 
         public static void GenerateRequest(string domainName,
             string entityName,
             ApiType apiType,
-            EntityCreateModel? request=null,
-            EntityCreateModel? response =null,
-            string? apiName=null )
+            EntityCreateModel? request = null,
+            EntityCreateModel? responseModel = null,
+            string? apiName = null)
         {
             string requestTye = GetRequestType(apiType);
-            string? requestName = GetRequestName(apiType,entityName,apiName);
-            var responseType = GetResponseType(apiType,entityName,response?.Name);
+            string? requestName = GetRequestName(apiType, entityName, apiName);
 
-           
-
-            var projectName = ProjectStructure.Application;            
+            var projectName = ProjectStructure.Application;
 
             var nameSpacePath = Path.Combine(
                 projectName, "Features",
@@ -72,11 +68,6 @@ namespace CodeGenerator.Core
 
             var path = Path.Combine(DirectoryHandler.GetAppRoot(), nameSpacePath);
 
-            if (response!=null &&  response.Properties.Any())
-            {
-                response.Name = entityName+"Model";
-                EntityGenerator.GenerateEntity(path, response);
-            }
 
             // Create a CodeCompileUnit
             CodeCompileUnit compileUnit = new CodeCompileUnit();
@@ -97,17 +88,31 @@ namespace CodeGenerator.Core
             newClass.IsClass = false;
             newClass.TypeAttributes = TypeAttributes.Public;
 
-            var basseType = responseType != null ?  $"IRequest<{responseType}>" : "IRequest";
+
+            string? responseType = responseModel?.Name;
+
+            if (responseModel != null && responseModel.Properties.Any())
+            {
+                var responseModelName = GetResponseModelName(apiType, entityName, responseModel?.Name);
+                responseModel.Name = responseModelName;
+                EntityGenerator.GenerateEntity(nameSpacePath, responseModel);
+                responseType = GetResponseType(apiType, responseModelName);
+            }
+
+            var basseType = responseType != null ? $"IRequest<{responseType}>" : "IRequest";
 
             newClass.BaseTypes.Add(new CodeTypeReference(basseType));
 
-            foreach (var property in request.Properties)
+            if (request != null)
             {
-                CodeMemberField idField = new CodeMemberField(property.Type, property.Name);
-                idField.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
-                idField.Name += " { get; set; }//";
+                foreach (var property in request.Properties)
+                {
+                    CodeMemberField idField = new CodeMemberField(property.Type, property.Name);
+                    idField.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
+                    idField.Name += " { get; set; }//";
 
-                newClass.Members.Add(idField);
+                    newClass.Members.Add(idField);
+                }
             }
 
             // Add the class to the namespace
@@ -117,50 +122,155 @@ namespace CodeGenerator.Core
 
         }
 
-        private static string? GetResponseType(ApiType apiType, string entityName, string? responseType)
+        private static string? GetResponseModelName(ApiType apiType, string? entityName, string? modelName)
         {
-             responseType = apiType switch
+            modelName = apiType switch
             {
-                ApiType.GetForGrid => $"Iqueryable<{entityName}>",
+                ApiType.GetForGrid => $"{entityName}GridModel",
                 ApiType.GetById => $"{entityName}Model",
-                ApiType.GetList => $"List<Id_Caption>",
-                ApiType.Create => "Create" + entityName +"Model",
-                ApiType.Edit => "Edit" + entityName +"Model",
+                ApiType.GetList => $"Id_Caption",
+                ApiType.Create => "Create" + entityName + "Model",
+                ApiType.Edit => "Edit" + entityName + "Model",
                 ApiType.DeleteById => null,
                 ApiType.DeleteByIds => null,
                 ApiType.Active => null,
                 ApiType.Deactive => null,
-                ApiType.Get => responseType,
-                ApiType.Post => responseType,
-                ApiType.Patch => responseType,
+                ApiType.Get => modelName,
+                ApiType.Post => modelName,
+                ApiType.Patch => modelName,
                 _ => throw new NotImplementedException(),
             };
 
-            
-            return responseType ;
+
+            return modelName;
         }
 
-        private static string? GetRequestName(ApiType apiType, string entityName, string? apiName)
+        private static string? GetResponseType(ApiType apiType, string? modelName)
         {
-           return apiType switch
-           {
-               ApiType.GetForGrid => $"Get{DirectoryHandler.GetPluralForm(entityName)}ForGrid",
-               ApiType.GetById => $"Get{entityName}ById",
-               ApiType.GetList => $"Get{DirectoryHandler.GetPluralForm(entityName)}List",
-               ApiType.Create => "Create" + entityName,
-               ApiType.Edit => "Edit" + entityName,
-               ApiType.DeleteById => $"Delete{entityName}ById",
-               ApiType.DeleteByIds => $"Delete{entityName}ByIds",
-               ApiType.Active => "Active" + entityName,
-               ApiType.Deactive => "Deactive" + entityName,
-               ApiType.Get => apiName,
-               ApiType.Post => apiName,
-               ApiType.Patch => apiName,
-               _ => throw new NotImplementedException(),
-           };
+            var responseType = apiType switch
+            {
+                ApiType.GetForGrid => $"IQueryable<{modelName}>",
+                ApiType.GetById => modelName,
+                ApiType.GetList => $"List<{modelName}>",
+                ApiType.Create => modelName,
+                ApiType.Edit => modelName,
+                ApiType.DeleteById => null,
+                ApiType.DeleteByIds => null,
+                ApiType.Active => null,
+                ApiType.Deactive => null,
+                ApiType.Get => modelName,
+                ApiType.Post => modelName,
+                ApiType.Patch => modelName,
+                _ => throw new NotImplementedException(),
+            };
+
+
+            return responseType;
         }
 
-        private static string GetRequestType(ApiType apiType)
+        public static string? GetRequestName(ApiType apiType, string entityName, string? apiName)
+        {
+            return apiType switch
+            {
+                ApiType.GetForGrid => $"Get{DirectoryHandler.GetPluralForm(entityName)}ForGrid",
+                ApiType.GetById => $"Get{entityName}ById",
+                ApiType.GetList => $"Get{DirectoryHandler.GetPluralForm(entityName)}List",
+                ApiType.Create => "Create" + entityName,
+                ApiType.Edit => "Edit" + entityName,
+                ApiType.DeleteById => $"Delete{entityName}ById",
+                ApiType.DeleteByIds => $"Delete{entityName}ByIds",
+                ApiType.Active => "Active" + entityName,
+                ApiType.Deactive => "Deactive" + entityName,
+                ApiType.Get => apiName,
+                ApiType.Post => apiName,
+                ApiType.Patch => apiName,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public static void GenerateHandler(string domainName, string entityName, ApiType apiType, EntityCreateModel? responseModel = null)
+        {
+            string requestTye = GetRequestType(apiType);
+            string? requestName = GetRequestName(apiType, entityName, null);
+
+            string repositoryType = requestTye == "Command" ? "Repository" : "Query";
+
+            var projectName = ProjectStructure.Application;
+
+            var nameSpacePath = Path.Combine(
+                projectName, "Features",
+                domainName,
+                DirectoryHandler.GetPluralForm(entityName), DirectoryHandler.GetPluralForm(requestTye),
+                requestName);
+
+            var path = Path.Combine(DirectoryHandler.GetAppRoot(), nameSpacePath);
+
+
+            // Create a CodeCompileUnit
+            CodeCompileUnit compileUnit = new CodeCompileUnit();
+
+            CodeNamespace blankNamespaces = new CodeNamespace();
+
+            var entityUsing = ProjectStructure.Application + "." + ProjectStructure.Id_CaptionPath;
+            var repositoryUsing = ProjectStructure.Application + "." + domainName;
+            blankNamespaces.Imports.Add(new CodeNamespaceImport(entityUsing));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport(repositoryUsing));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("System.Linq"));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("MediatR"));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("MediatR"));
+            compileUnit.Namespaces.Add(blankNamespaces);
+
+            // Create a namespace
+            CodeNamespace codeNamespace = new CodeNamespace(nameSpacePath.Replace("\\", "."));
+            compileUnit.Namespaces.Add(codeNamespace);
+
+            CodeTypeDeclaration newClass = new CodeTypeDeclaration(requestName + requestTye + "Handler");
+            newClass.IsClass = false;
+            newClass.TypeAttributes = TypeAttributes.Public;
+
+            string? responseType = responseModel?.Name;
+
+            if (responseModel != null)
+            {
+                var responseModelName = GetResponseModelName(apiType, entityName, responseModel?.Name);
+                responseModel.Name = responseModelName;              
+                responseType = GetResponseType(apiType, responseModelName);
+            }          
+
+
+            var basseType = responseType != null ? $"IRequestHandler<{requestName + requestTye},{responseType}>" : $"IRequestHandler<{requestName + requestTye}>";
+
+            newClass.BaseTypes.Add(new CodeTypeReference(basseType));
+
+            CodeMemberField idField = new CodeMemberField($"I{entityName}{repositoryType}", $"_{entityName.ToLower()}{repositoryType}");
+            idField.Attributes = MemberAttributes.Private;
+           // idField.UserData              
+
+            newClass.Members.Add(idField);
+
+            CodeConstructor constructor = new CodeConstructor();
+            constructor.Attributes = MemberAttributes.Public;
+            constructor.Parameters.Add(new CodeParameterDeclarationExpression($"I{entityName}{repositoryType}", $"{entityName.ToLower()}{repositoryType}"));
+            constructor.Statements.Add(new CodeSnippetExpression($"_{entityName.ToLower()}{repositoryType} = {entityName.ToLower()}{repositoryType} "));
+            newClass.Members.Add(constructor);
+
+            CodeMemberMethod method = new CodeMemberMethod();
+            method.Name = "Handle";
+            method.Attributes = MemberAttributes.Public | MemberAttributes.Final;    
+            
+            method.ReturnType =new CodeTypeReference(responseType != null ?$"async Task<{responseType}>": "async Task<Unit>");
+            method.Parameters.Add(new CodeParameterDeclarationExpression(requestName + requestTye, "request"));
+            method.Parameters.Add(new CodeParameterDeclarationExpression("CancellationToken ", "cancellationToken"));
+            method.Statements.Add(new CodeSnippetExpression("throw new NotImplementedException();"));
+            newClass.Members.Add(method);
+
+            // Add the class to the namespace
+            codeNamespace.Types.Add(newClass);
+
+            CodeGeneratorHandler.GenerateCSharpClassFile(compileUnit, requestName + requestTye + "Handler", path);
+        }
+
+        public static string GetRequestType(ApiType apiType)
         {
             var commansApiType = new List<ApiType>
             {
@@ -169,7 +279,7 @@ namespace CodeGenerator.Core
                 ApiType.DeleteById,
                 ApiType.DeleteByIds,
                 ApiType.Active,
-                ApiType.Deactive,                
+                ApiType.Deactive,
                 ApiType.Post,
                 ApiType.Patch
             };
@@ -241,10 +351,7 @@ namespace CodeGenerator.Core
 
         }
         private static MethodDeclarationSyntax GenerateMethod(CreateMethodModel model)
-        {
-            var a = model.Modifires.ToArray();
-            var b = model.Attributes.ToArray();
-            var c = model.Body.ToArray();
+        {           
 
             var methodDeclaration = SyntaxFactory.MethodDeclaration(
                  SyntaxFactory.ParseTypeName("Task<IActionResult>"), model.Name)
@@ -278,25 +385,6 @@ namespace CodeGenerator.Core
         public ApiType Type { get; set; }
         public string Name { get; set; }
         public string EntityName { get; set; }
-
-    }
-
-    public enum ApiType : byte
-    {
-
-        GetForGrid = 1,
-        GetById = 2,
-        GetList = 3,
-        Create = 4,
-        Edit = 5,
-        DeleteById = 6,
-        DeleteByIds = 7,
-        Active = 8,
-        Deactive = 9,
-
-        Get = 10,
-        Post = 11,
-        Patch = 12,
 
     }
 

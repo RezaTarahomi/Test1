@@ -21,17 +21,18 @@ namespace CodeGenerator.Test.Unit
         
 
             var domainName = "VehicleDomain";
+            var type = "Query";
 
             var repositoryPath = repositoryProjectName + "\\" + domainName;
             var repositoryInterfacePath = repositoryInterfaceProjectName + "\\" + domainName;
 
             var entityName = "Vehicles_Test";
 
-            RepositoryInterfaceGenerator.Generate(entityName, repositoryInterfacePath);
+            RepositoryInterfaceGenerator.Generate(entityName, repositoryInterfacePath,type);
 
-            RepositoryGenerator.Generate(entityName, repositoryPath);
+            RepositoryGenerator.Generate(entityName, repositoryPath, type);
 
-            var className = entityName + "Repository";
+            var className = entityName + type;
 
             var fullRepositoryPath = Path.Combine(DirectoryHandler.GetAppRoot(), repositoryPath, className + ".cs");
 
@@ -39,18 +40,18 @@ namespace CodeGenerator.Test.Unit
 
             Assert.True(expected);
 
-            if (File.Exists(fullRepositoryPath))
-            {
-                File.Delete(fullRepositoryPath);
-            }
+            //if (File.Exists(fullRepositoryPath))
+            //{
+            //    File.Delete(fullRepositoryPath);
+            //}
 
-            var interfaceName = "I" + entityName + "Repository";
+            var interfaceName = "I" + entityName + type;
             var fullRepositoryInterfacePath = Path.Combine(DirectoryHandler.GetAppRoot(), repositoryInterfacePath, interfaceName + ".cs");
 
-            if (File.Exists(fullRepositoryInterfacePath))
-            {
-                File.Delete(fullRepositoryInterfacePath);
-            }
+            //if (File.Exists(fullRepositoryInterfacePath))
+            //{
+            //    File.Delete(fullRepositoryInterfacePath);
+            //}
         }
 
     }

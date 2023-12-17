@@ -1,0 +1,28 @@
+﻿@model List<FieldViewModel>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Operationn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Type</td>
+                    <td>@item.Description</td>
+                    <td><button class="btn btn-success">+</button></td>
+                </tr>
+            }
+
+
+        </tbody>
+        
+    </table>
+
+    

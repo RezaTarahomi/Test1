@@ -8,5 +8,7 @@ namespace Application.Common
 {
     public class Id_Caption
     {
+        public int Id { get; set; }
+        public string Caption { get; set; }
     }
 }

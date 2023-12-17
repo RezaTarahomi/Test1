@@ -1,13 +1,14 @@
-﻿using System.CodeDom;
+﻿using CodeGenerator.Core.Extensions;
+using System.CodeDom;
 
 namespace CodeGenerator.Core
 {
     public class RepositoryGenerator
     {
-        public static void Generate(string entityName, string path)
+        public static void Generate(string entityName, string path,string type)
         {
-            var className = entityName + "Repository";
-            var interfaceName = "I" + entityName + "Repository";
+            var className = entityName + type;
+            var interfaceName = "I" + entityName + type;
             // Create a CodeCompileUnit
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 
@@ -34,7 +35,7 @@ namespace CodeGenerator.Core
 
             newClass.BaseTypes.Add(new CodeTypeReference(interfaceName));
 
-            CodeMemberField queriableField = new CodeMemberField($"IQueryable<{entityName}>", entityName.ToLower()+"s");
+            CodeMemberField queriableField = new CodeMemberField($"IQueryable<{entityName}>", entityName.Underscore()+"s");
             queriableField.Attributes = MemberAttributes.Private;           
 
             newClass.Members.Add(queriableField);
@@ -42,7 +43,7 @@ namespace CodeGenerator.Core
             CodeConstructor constructor = new CodeConstructor();
             constructor.Attributes = MemberAttributes.Public;
             constructor.Parameters.Add(new CodeParameterDeclarationExpression( "TransportDbContext", "dbcontext"));
-            constructor.Statements.Add(new CodeSnippetExpression($"{entityName.ToLower()}s = dbcontext.Set<{entityName}>()"));
+            constructor.Statements.Add(new CodeSnippetExpression($"{entityName.Underscore()}s = dbcontext.Set<{entityName}>()"));
             newClass.Members.Add(constructor);
 
 

@@ -1,6 +1,7 @@
 ﻿using CodeGenerator.Core;
 using CodeGenerator.Core.Dtos;
 using System;
+using System.Collections.Generic;
 
 namespace CodeGenerator.Test.Unit.TestBuilders
 {
@@ -10,6 +11,7 @@ namespace CodeGenerator.Test.Unit.TestBuilders
         public EntityBuilder()
         {
             _entity = new EntityCreateModel();
+            _entity.Properties = new List<ClassPropertyModel>();
         }
 
 
@@ -25,6 +27,16 @@ namespace CodeGenerator.Test.Unit.TestBuilders
         }
 
         public EntityBuilder WithProperty(string name, Type type)
+        {
+            _entity.Properties.Add(new ClassPropertyModel
+            {
+                Name = name,
+                Type = type.ToString()
+            });
+            return this;
+        }
+
+        public EntityBuilder WithProperty(string name, string type)
         {
             _entity.Properties.Add(new ClassPropertyModel
             {

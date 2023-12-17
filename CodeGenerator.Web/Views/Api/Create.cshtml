@@ -1,6 +1,7 @@
 ﻿@model ApiViewModel
 
-@using CodeGenerator.Core.Dtos
+@using Database.Data.Entities
+
 
 <div class="card mb-3">
     <div class="card-header bg-light">
@@ -13,19 +14,19 @@
     <div class="card-body ">
         <div class="mb-3">
 
-            <form id="create" asp-controller="DailyMenu" asp-action="Create" method="post">
+            <form id="create" asp-controller="Api" asp-action="Create" method="post">
                 <input asp-for="Id" type="hidden" />
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="row">
                     <div class="d-flex align-items-center justify-content-start my-3">
                         <div id="bulk-select-replace-element">
-                            <button class="btn btn-falcon-success btn-sm"
+                            <button class="btn btn-success"
                                     type="submit">
                                 <span data-fa-transform="shrink-3 down-2"></span><span class="ms-1">ثبت</span>
                             </button>
                         </div>
                         <div id="bulk-select-replace-element">
-                            <a class="btn btn-falcon-warning btn-sm ms-2" href="@Url.Action("Index")">
+                            <a class="btn btn-warning" href="@Url.Action("Index")">
                                 <span data-fa-transform="shrink-3 down-2"></span><span class="ms-1">بازگشت</span>
                             </a>
                         </div>
@@ -34,6 +35,19 @@
 
                 <div class="mb-3 row form-group">
 
+                    <div class="col-md-4 form-group">
+                        <label asp-for="Domains" class="form-label"></label>
+                        <select asp-for="Domains" class="form-select" asp-items="@Html.GetEnumSelectList<Domains>()" aria-label="Default select example">
+                            <option selected="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 form-group">
+                        <label asp-for="BaseType" class="form-label"></label>
+                        <select asp-for="BaseType" class="form-select" asp-items="@Html.GetEnumSelectList<BaseType>()" aria-label="Default select example" onchange="getBaseTypeFields($(this))">
+                            <option selected="">انتخاب کنید...</option>
+                        </select>
+                    </div>
 
                     <div class="col-md-4 form-group">
                         <label asp-for="Controller" class="form-label"></label>
@@ -83,6 +97,10 @@
                 </div>
             </form>
 
+            <div id="fields">
+
+            </div>
+
         </div>
 
     </div>
@@ -126,4 +144,18 @@
         }
 
     }
+
+    function getBaseTypeFields(e)
+    {
+        $.ajax({
+            url: "@Url.Action("GetBaseTypeFields")",
+            data: { baseType: e.val() },
+            success: function (data) {
+                $("#fields").html(data);
+            }
+        });
+
+    }
+
+
 </script>

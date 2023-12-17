@@ -1,10 +1,12 @@
 ﻿using CodeGenerator.Core;
 using CodeGenerator.Core.Dtos;
+using CodeGenerator.Core.Extensions;
 using CodeGenerator.Test.Unit.TestBuilders;
 using Database.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace CodeGenerator.Test.Unit
@@ -30,10 +32,10 @@ namespace CodeGenerator.Test.Unit
 
             Assert.Equal(2, sut.Count);
             Assert.Equal("Capacity", sut.First().Name);
-            Assert.Equal(typeof(int), sut.First().Type);
+            Assert.Equal("int", sut.First().Type);
 
             Assert.Equal("Name", sut.Last().Name);
-            Assert.Equal(typeof(string), sut.Last().Type);
+            Assert.Equal("string", sut.Last().Type);
         }
 
         [Fact]
@@ -43,10 +45,10 @@ namespace CodeGenerator.Test.Unit
 
             var entityName = "Vehicles_Test";
             var name = "Name";
-            var nameType = typeof(string);
+            var nameType = "string";
 
             var capacity = "Capacity";
-            var capacityType = typeof(int);
+            var capacityType = "int";
 
 
 
@@ -117,8 +119,46 @@ namespace CodeGenerator.Test.Unit
 
             Assert.Equal(2, sut.Count);
             Assert.Equal("Capacity", sut.First().Name);
-            Assert.Equal(typeof(int), sut.First().Type);
+            Assert.Equal("int", sut.First().Type);
             
         }
+
+
+        [Fact]
+        public void inject_class()
+        {
+
+            var classPath = @"E:\DotNetProjects\Test\CodeGenerator\Application\Features\VehicleDomain\Vehicles_Tests\Commands\CreateVehicles_Test\CreateVehicles_TestCommandHandler.cs";
+            var injectedClass = @"E:\DotNetProjects\Test\CodeGenerator\Application\VehicleDomain\IVehicles_TestQuery.cs";
+           
+            EntityGenerator.Inject(classPath, injectedClass);
+
+            var injectedclassName = Path.GetFileNameWithoutExtension(injectedClass).Substring(1).Underscore();
+            var classFields = CodeGeneratorHandler.GetClassProperties(classPath).Select(x=>x.Name).ToList();
+            Assert.Contains(injectedclassName,classFields);
+
+        }
+        [Fact]
+        public void call_repository_method_in_class_method()
+        {
+            var baseClassPath = @"E:\DotNetProjects\Test\CodeGenerator\Application\Features\VehicleDomain\Vehicles_Tests\Commands\CreateVehicles_Test\CreateVehicles_TestCommandHandler.cs";
+            var injectedClass = @"E:\DotNetProjects\Test\CodeGenerator\Application\VehicleDomain\IVehicles_TestQuery.cs";
+
+            var injectedClassMethod = new MethodSignBuilder()
+                .WithName("FindById")
+                .WithResponseType("Vehicles_Test")
+                .WithParameters("id","int")
+                .Build();
+
+            var baseClassMethodName = "Handle";
+
+          //  EntityGenerator.CallInjectedClassMethod(baseClassPath, baseClassMethodName, injectedClass, injectedClassMethod);
+
+            Assert.Contains(injectedClassMethod.Name, File.ReadAllText(baseClassPath));
+         
+
+        }
+
+     
     }
 }

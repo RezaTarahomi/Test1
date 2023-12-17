@@ -1,0 +1,134 @@
+﻿@model RequestParameterViewModel
+
+@using Database.Data.Entities
+
+
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <div class="row flex-between-center">
+            <div class="col-sm-auto">
+                <h5 class="mb-2 mb-sm-0"> ایجاد Api</h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body ">
+        <div class="mb-3">
+
+            <form id="create" asp-controller="Api" asp-action="RequestParameter" method="post">
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="ApiId" type="hidden" />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="row">
+                    <div class="d-flex align-items-center justify-content-start my-3">
+                        <div id="bulk-select-replace-element">
+                            <button class="btn btn-success"
+                                    type="submit">
+                                <span data-fa-transform="shrink-3 down-2"></span><span class="ms-1">ثبت</span>
+                            </button>
+                        </div>
+                        <div id="bulk-select-replace-element">
+                            <a class="btn btn-warning" href="@Url.Action("Index")">
+                                <span data-fa-transform="shrink-3 down-2"></span><span class="ms-1">بازگشت</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 row form-group">
+
+
+                    <div class="col-md-4">
+                        <label asp-for="Name" class="form-label"></label>
+                        <div>
+                            <input asp-for="Name" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Type" class="form-label"></label>
+                        <div>
+                            <input asp-for="Type" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Description" class="form-label"></label>
+                        <div>
+                            <input asp-for="Description" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 form-group">
+                        <label asp-for="AttributeType" class="form-label"></label>
+                        <select asp-for="AttributeType" class="form-select" asp-items="@Html.GetEnumSelectList<AttributeType>()" aria-label="Default select example">
+                            <option selected="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-4 mt-3">
+                        @{
+
+                            if (Model.IsRequired)
+                            {
+
+                                <input name="IsRequired" asp-for="IsRequired" checked="checked" type="checkbox" />
+                            }
+                            else
+                            {
+                                <input name="IsRequired" asp-for="IsRequired" type="checkbox" />
+                            }
+
+
+                            <span> &nbsp;</span> <label class="form-label ml-2"> IsRequired </label>
+                        }
+                    </div>
+
+                    <div class="col-md-4 mt-3">
+                        @{
+
+                            if (Model.Filterable)
+                            {
+
+                                <input name="IsRequired" asp-for="Filterable" checked="checked" type="checkbox" />
+                            }
+                            else
+                            {
+                                <input name="Filterable" asp-for="Filterable" type="checkbox" />
+                            }
+
+
+                            <span> &nbsp;</span> <label class="form-label ml-2"> Filterable </label>
+                        }
+                    </div>
+
+                    <div class="col-md-4 mt-3">
+                        @{
+
+                            if (Model.Sortable)
+                            {
+
+                                <input name="IsRequired" asp-for="Sortable" checked="checked" type="checkbox" />
+                            }
+                            else
+                            {
+                                <input name="Sortable" asp-for="Sortable" type="checkbox" />
+                            }
+
+
+                            <span> &nbsp;</span> <label class="form-label ml-2"> Sortable </label>
+                        }
+                    </div>
+
+
+
+
+                </div>
+            </form>
+
+
+        </div>
+
+    </div>
+</div>
+

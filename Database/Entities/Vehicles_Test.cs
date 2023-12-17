@@ -7,7 +7,7 @@ namespace Database.Entities
 
         public string Name { get; set; }//;
 
-        public int Capacity { get; set; }//;
+        public string Capacity { get; set; }//;
 
         public int VehicleModel_TestId { get; set; }//;
 

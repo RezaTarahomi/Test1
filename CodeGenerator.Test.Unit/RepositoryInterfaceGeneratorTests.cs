@@ -21,12 +21,14 @@ namespace CodeGenerator.Test.Unit
 
             var path = projectName + "\\" + domainName;
 
-            var entityName = "Vehicles_Test";            
+            var entityName = "Vehicles_Test";
 
-           RepositoryInterfaceGenerator.Generate(entityName, path);
+            var type = "Repository";
+
+           RepositoryInterfaceGenerator.Generate(entityName, path,type);
 
 
-            var interfaceName = "I" + entityName + "Repository";
+            var interfaceName = "I" + entityName + type;
 
             var fullPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, interfaceName + ".cs");
 
@@ -34,10 +36,10 @@ namespace CodeGenerator.Test.Unit
 
             Assert.True(expected);
 
-            if (File.Exists(fullPath))
-            {
-                File.Delete(fullPath);
-            }
+            //if (File.Exists(fullPath))
+            //{
+            //    File.Delete(fullPath);
+            //}
 
         }
     }

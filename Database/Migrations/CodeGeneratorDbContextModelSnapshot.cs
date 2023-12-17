@@ -22,7 +22,7 @@ namespace CodeGenerator.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.Api", b =>
+            modelBuilder.Entity("Database.Data.Entities.Api", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,13 +30,15 @@ namespace CodeGenerator.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("Domain")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -47,7 +49,83 @@ namespace CodeGenerator.Migrations
                     b.ToTable("Apis");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.ObjectType", b =>
+            modelBuilder.Entity("Database.Data.Entities.Entity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("Domain")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Entities");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.EntityParent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("OneToOne")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("EntityParents");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.Field", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.ToTable("Fields");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.ObjectType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -76,7 +154,7 @@ namespace CodeGenerator.Migrations
                     b.ToTable("ObjectTypes");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.RequestParameter", b =>
+            modelBuilder.Entity("Database.Data.Entities.RequestParameter", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -118,7 +196,7 @@ namespace CodeGenerator.Migrations
                     b.ToTable("RequestParameters");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.ResponseParameter", b =>
+            modelBuilder.Entity("Database.Data.Entities.ResponseParameter", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -156,26 +234,56 @@ namespace CodeGenerator.Migrations
                     b.ToTable("ResponseParameters");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.ObjectType", b =>
+            modelBuilder.Entity("Database.Data.Entities.EntityParent", b =>
                 {
-                    b.HasOne("CodeGenerator.Data.Entities.Api", "Api")
-                        .WithMany("ObjectTypes")
-                        .HasForeignKey("ApiId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Database.Data.Entities.Entity", "Entity")
+                        .WithMany("EntityParents")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CodeGenerator.Data.Entities.ObjectType", "Parent")
+                    b.HasOne("Database.Data.Entities.Entity", "Parent")
+                        .WithMany("EntityChilds")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Entity");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.Field", b =>
+                {
+                    b.HasOne("Database.Data.Entities.Entity", "Entity")
+                        .WithMany("Fields")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.ObjectType", b =>
+                {
+                    b.HasOne("Database.Data.Entities.Api", "Api")
+                        .WithMany("ObjectTypes")
+                        .HasForeignKey("ApiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Database.Data.Entities.ObjectType", "Parent")
                         .WithMany("Child")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Api");
 
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.RequestParameter", b =>
+            modelBuilder.Entity("Database.Data.Entities.RequestParameter", b =>
                 {
-                    b.HasOne("CodeGenerator.Data.Entities.Api", "Api")
+                    b.HasOne("Database.Data.Entities.Api", "Api")
                         .WithMany("RequestParameters")
                         .HasForeignKey("ApiId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -184,15 +292,15 @@ namespace CodeGenerator.Migrations
                     b.Navigation("Api");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.ResponseParameter", b =>
+            modelBuilder.Entity("Database.Data.Entities.ResponseParameter", b =>
                 {
-                    b.HasOne("CodeGenerator.Data.Entities.Api", "Api")
+                    b.HasOne("Database.Data.Entities.Api", "Api")
                         .WithMany("ResponseParameters")
                         .HasForeignKey("ApiId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CodeGenerator.Data.Entities.ObjectType", "ObjectType")
+                    b.HasOne("Database.Data.Entities.ObjectType", "ObjectType")
                         .WithMany()
                         .HasForeignKey("ObjectTypeId");
 
@@ -201,7 +309,7 @@ namespace CodeGenerator.Migrations
                     b.Navigation("ObjectType");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.Api", b =>
+            modelBuilder.Entity("Database.Data.Entities.Api", b =>
                 {
                     b.Navigation("ObjectTypes");
 
@@ -210,7 +318,16 @@ namespace CodeGenerator.Migrations
                     b.Navigation("ResponseParameters");
                 });
 
-            modelBuilder.Entity("CodeGenerator.Data.Entities.ObjectType", b =>
+            modelBuilder.Entity("Database.Data.Entities.Entity", b =>
+                {
+                    b.Navigation("EntityChilds");
+
+                    b.Navigation("EntityParents");
+
+                    b.Navigation("Fields");
+                });
+
+            modelBuilder.Entity("Database.Data.Entities.ObjectType", b =>
                 {
                     b.Navigation("Child");
                 });

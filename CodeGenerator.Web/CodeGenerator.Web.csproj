@@ -8,6 +8,8 @@
 
 	<ItemGroup>
 
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.25" />
+
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.25" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.25" />
@@ -20,13 +22,15 @@
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
 
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+
+		
 
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Application\Application.csproj" />
 	  <ProjectReference Include="..\CodeGenerator.Core\CodeGenerator.Core.csproj" />
 	  <ProjectReference Include="..\Database\Database.csproj" />
 	</ItemGroup>
