@@ -2,6 +2,7 @@
 using CodeGenerator.Core.Dtos;
 using CodeGenerator.Core.Extensions;
 using CodeGenerator.Test.Unit.TestBuilders;
+using Database.Data.Entities;
 using Database.Entities;
 using System.Collections.Generic;
 using System.IO;
@@ -142,23 +143,79 @@ namespace CodeGenerator.Test.Unit
         public void call_repository_method_in_class_method()
         {
             var baseClassPath = @"E:\DotNetProjects\Test\CodeGenerator\Application\Features\VehicleDomain\Vehicles_Tests\Commands\CreateVehicles_Test\CreateVehicles_TestCommandHandler.cs";
-            var injectedClass = @"E:\DotNetProjects\Test\CodeGenerator\Application\VehicleDomain\IVehicles_TestQuery.cs";
+            var injectedClassInterface = @"E:\DotNetProjects\Test\CodeGenerator\Application\VehicleDomain\IVehicles_TestQuery.cs";
+            var injectedClass = @"E:\DotNetProjects\Test\CodeGenerator\Persistance\VehicleDomain\Vehicles_TestQuery.cs";
 
             var injectedClassMethod = new MethodSignBuilder()
-                .WithName("FindById")
-                .WithResponseType("Vehicles_Test")
-                .WithParameters("id","int")
+                .WithName("GetAll")
+                .WithResponseType("List<Vehicles_Test>")
+                .WithResponseVariableName("vehicles_Tests")                
                 .Build();
 
             var baseClassMethodName = "Handle";
 
-          //  EntityGenerator.CallInjectedClassMethod(baseClassPath, baseClassMethodName, injectedClass, injectedClassMethod);
+            EntityGenerator.CallInjectedClassMethod(baseClassPath, baseClassMethodName, injectedClass, injectedClassInterface, injectedClassMethod);
 
             Assert.Contains(injectedClassMethod.Name, File.ReadAllText(baseClassPath));
          
 
         }
 
-     
+        [Fact]
+        public void find_entity_parent()
+        {
+            var entityDirectorypath = @"E:\DotNetProjects\Test\CodeGenerator\Database\Data\Entities\";
+
+            var expected = new List<Entity> 
+            {
+                new Entity 
+                {
+                    Name = "ResponseParameter" ,
+                    Fields=new List<Field>
+                    {
+                        new Field {Name ="Id", Type = "int"}
+                    },
+                    EntityParents=new List<EntityParent>
+                    {
+                        new EntityParent
+                        {
+                            Entity=new Entity{Name="Api"} , OneToOne=false
+                        }
+                    }
+                }              
+
+            };
+
+            List<Entity> sut = EntityGenerator.GetEntitiesFromDirectory(entityDirectorypath);
+
+            var result = sut.FirstOrDefault(x => x.Name == "ResponseParameter").EntityParents.FirstOrDefault(x=>x.Parent.Name=="Api").Parent.Name ;
+
+            Assert.Equal("Api", result);
+        }
+        [Fact]
+        public void find_enum()
+        {
+            var entityDirectorypath = @"E:\DotNetProjects\Test\CodeGenerator\Database\Data\Entities\";
+
+            var expected = new List<Entity>
+            {
+                new Entity
+                {
+                    Name = "Api" ,
+                    Fields=new List<Field>
+                    {
+                        new Field {Name ="Type", Type = "ApiType"}
+                    }
+                }
+
+            };
+
+            List<Entity> sut = EntityGenerator.GetEntitiesFromDirectory(entityDirectorypath);
+
+            var result = sut.FirstOrDefault(x => x.Name == "Api").Fields.FirstOrDefault(x => x.Name == "Type").EnumType.EnumFields.FirstOrDefault(x=>x.Name== "GetForGrid").Value;
+
+            Assert.Equal(1, result.Value);
+        }
+
     }
 }

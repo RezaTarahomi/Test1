@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Persistance.UnitOfWork
+namespace Application.Framework
 {
-    public interface IUnitOfWork
+    public interface IScop
     {
+        
     }
 }

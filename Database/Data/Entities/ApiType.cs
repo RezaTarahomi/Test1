@@ -1,8 +1,10 @@
-﻿namespace Database.Data.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Database.Data.Entities
 {
     public enum ApiType : byte
     {
-
+        [Display(Name ="گرید" ,Order =1)]
         GetForGrid = 1,
         GetById = 2,
         GetList = 3,

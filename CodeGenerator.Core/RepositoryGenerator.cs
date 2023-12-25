@@ -23,6 +23,7 @@ namespace CodeGenerator.Core
             blankNamespaces.Imports.Add(new CodeNamespaceImport(interfaceUsing));
 
             blankNamespaces.Imports.Add(new CodeNamespaceImport("System.Linq"));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore"));
 
             compileUnit.Namespaces.Add(blankNamespaces);
 

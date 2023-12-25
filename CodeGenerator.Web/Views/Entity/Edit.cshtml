@@ -1,0 +1,288 @@
+﻿@model EntityViewModel
+@using Database.Data.Entities
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .edit-cell {
+    }
+</style>
+
+<h2>Edit</h2>
+
+
+
+<form asp-action="Edit" id="editForm">
+    <div class="form-horizontal">
+        <h4>Entity</h4>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input asp-for="Id" hidden="hidden" class="form-control" />
+        <div class="form-group">
+            <label asp-for="Name" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Path" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Path" class="form-control" />
+                <span asp-validation-for="Path" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Domain" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="Domain" class="form-select" asp-items="@Html.GetEnumSelectList<Domains>()" aria-label="Default select example">
+                    <option selected="">انتخاب کنید...</option>
+                </select>
+                <span asp-validation-for="Domain" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Separated link</a>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 control-label">Fields</label>
+
+            <div class=" row form-group">
+
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="input-group">
+                                <input type="text" id="search-box" class="form-control" placeholder="Search For Fields">                                
+                            </div>
+
+                            <div id="suggestions-list" > </div>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+
+            <div class=" row form-group">
+
+                <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <div>
+                        <input type='text' id="fieldName" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Type</label>
+                    <div>
+                        <input type='text' id="fieldType" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="mt-3"><button type="button" class="addField btn btn-success mx-2 mt-3"> + </button></div>
+                </div>
+            </div>
+
+            <div class="col-md-10">
+
+                <table id="data-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entity in Model.Fields)
+                        {
+                            <tr>
+                                <td>@entity.Id</td>
+                                <td>@entity.Name</td>
+                                <td>@entity.Type</td>
+                                <td>
+                                    <button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button>
+                                    <button type="button" class="saveButton btn btn-sm btn-outline-success" style="display:none;">Save</button>
+                                    <button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Edit" class="btn btn-success mx-2" />
+            </div>
+
+
+        </div>
+    </div>
+</form>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    function addRowToTable(name, type) {
+        var newRow = $('<tr>');
+        var cell1 = $('<td>').text('');
+        var cell2 = $('<td>').text(name);
+        var cell3 = $('<td>').text(type);
+        var operationCol = '<button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button> ' +
+            '<button type="button" class="saveButton btn btn-sm btn-outline-success" style="display:none;">Save</button> ' +
+            '<button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button> ';
+        var cell4 = $('<td>').html(operationCol);
+        newRow.append(cell1, cell2, cell3, cell4);
+        $('.table').append(newRow);
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#search-box').on('keyup', function () {
+            let query = $(this).val();
+
+            if (query.length > 0) {
+                $.ajax({
+                    url: '/Entity/GetProperties',
+                    method: 'GET',
+                    data: {
+                        query: query
+                    },
+                    success: function (data) {                       
+                        $('#suggestions-list').html('');
+                        if (data.length>0) {
+                            for (let i = 0; i < data.length; i++) {
+                                $('#suggestions-list').append('<a class="dropdown-item" href="#" fieldName="' + data[i].name + '" fieldType="' + data[i].type + '">' + data[i].name + " - " + data[i].type + '</a>');
+                            }
+                        } else {
+                            $('#fieldName').val(query);
+                        }
+                       
+                    }
+                    ,
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                });
+            } else {               
+                $('#suggestions-list').html('');               
+            }
+        });
+
+        $("body").on("click", '.dropdown-item', function () {            
+
+            var name = $(this).attr("fieldName");
+            var type = $(this).attr("fieldType");
+
+            addRowToTable(name,type)
+        });
+       
+    });
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $("body").on("click", '.editButton', function () {
+            var row = $(this).closest("tr");
+
+            var name = row.find("td:eq(1)").text();
+            var type = row.find("td:eq(2)").text();
+
+
+            row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + name + "'>");
+            row.find("td:eq(2)").html("<input type='text' class='form-control edit-cell' value='" + type + "'>");
+
+            $(this).hide();
+            row.find(".saveButton").show();
+        });
+        $("body").on("click", '.deleteButton', function () {
+            $(this).closest("tr").remove();
+        });
+
+        $("body").on("click", '.saveButton', function () {
+            var row = $(this).closest("tr");
+
+            var name = row.find("td:eq(1) input").val();
+            var type = row.find("td:eq(2) input").val();
+
+
+            row.find("td:eq(1)").text(name);
+            row.find("td:eq(2)").text(type);
+
+            $(this).hide();
+            row.find(".editButton").show();
+        });
+
+        $(".addField").on("click", function () {          
+
+            var name = $("#fieldName").val();
+            var type = $("#fieldType").val();
+
+            addRowToTable(name, type)
+
+        });
+
+        $("#editForm").submit(function (e) {
+            e.preventDefault();
+
+            var entity = {
+                id: $("#Id").val(),
+                name: $("#Name").val(),
+                path: $("#Path").val(),
+                domain: $("#Domain").val()
+            };
+
+            var fields = [];
+            $(".table").find('tbody > tr').each(function () {
+                var row = {};
+                // Your code to extract values from the table cells and assign them to the properties of the "row" object.
+                // For example, assuming the first cell contains a name and the second cell contains an age:
+                row.id = $(this).find('td:eq(0)').text();
+                row.name = $(this).find('td:eq(1)').text();
+                row.type = $(this).find('td:eq(2)').text();
+                // Add the row object to the "rows" array.
+                fields.push(row);
+            });
+
+            entity.fields = fields;
+            // Perform any desired actions with the form data
+            var formData = $(this).serialize(); // Serializes the form data
+
+
+            // Perform an AJAX request to submit the form data
+            $.ajax({
+                url: "/Entity/Edit", // Replace with your controller and action method
+                type: "POST",
+                data: entity,
+                success: function (response) {
+                    // Handle the success response
+                },
+                error: function (xhr, status, error) {
+                    // Handle the error response
+                }
+            });
+        });
+    });
+</script>

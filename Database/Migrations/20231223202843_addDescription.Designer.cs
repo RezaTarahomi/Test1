@@ -4,6 +4,7 @@ using Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeGenerator.Migrations
 {
     [DbContext(typeof(CodeGeneratorDbContext))]
-    partial class CodeGeneratorDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231223202843_addDescription")]
+    partial class addDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,61 +103,6 @@ namespace CodeGenerator.Migrations
                     b.ToTable("EntityParents");
                 });
 
-            modelBuilder.Entity("Database.Data.Entities.EnumField", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("EnumTypeId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Value")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EnumTypeId");
-
-                    b.ToTable("EnumFields");
-                });
-
-            modelBuilder.Entity("Database.Data.Entities.EnumType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EnumTypes");
-                });
-
             modelBuilder.Entity("Database.Data.Entities.Field", b =>
                 {
                     b.Property<int>("Id")
@@ -170,9 +117,6 @@ namespace CodeGenerator.Migrations
                     b.Property<int>("EntityId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EnumTypeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -184,8 +128,6 @@ namespace CodeGenerator.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EntityId");
-
-                    b.HasIndex("EnumTypeId");
 
                     b.ToTable("Fields");
                 });
@@ -317,17 +259,6 @@ namespace CodeGenerator.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("Database.Data.Entities.EnumField", b =>
-                {
-                    b.HasOne("Database.Data.Entities.EnumType", "EnumType")
-                        .WithMany("EnumFields")
-                        .HasForeignKey("EnumTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("EnumType");
-                });
-
             modelBuilder.Entity("Database.Data.Entities.Field", b =>
                 {
                     b.HasOne("Database.Data.Entities.Entity", "Entity")
@@ -336,14 +267,7 @@ namespace CodeGenerator.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Database.Data.Entities.EnumType", "EnumType")
-                        .WithMany("Fields")
-                        .HasForeignKey("EnumTypeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Entity");
-
-                    b.Navigation("EnumType");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.ObjectType", b =>
@@ -406,13 +330,6 @@ namespace CodeGenerator.Migrations
                     b.Navigation("EntityChilds");
 
                     b.Navigation("EntityParents");
-
-                    b.Navigation("Fields");
-                });
-
-            modelBuilder.Entity("Database.Data.Entities.EnumType", b =>
-                {
-                    b.Navigation("EnumFields");
 
                     b.Navigation("Fields");
                 });

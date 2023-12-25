@@ -10,6 +10,7 @@ namespace CodeGenerator.Core.Dtos
     {
         public string Name { get; set; }
         public string ResponseType { get; set; }
+        public string ResponseVariableName { get; set; }
 
         public List<ClassPropertyModel> Parameters { get; set; }
     }

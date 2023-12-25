@@ -9,24 +9,20 @@ using System.Threading.Tasks;
 
 namespace Database.Data.Config
 {
-    public class FieldConfig : IEntityTypeConfiguration<Field>
+    public class EnumFieldConfig : IEntityTypeConfiguration<EnumField>
     {
-        public void Configure(EntityTypeBuilder<Field> builder)
+        public void Configure(EntityTypeBuilder<EnumField> builder)
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-            builder.HasOne(x => x.Entity)
-              .WithMany(x => x.Fields)
-              .HasForeignKey(x => x.EntityId)
+            builder.HasOne(x => x.EnumType)
+              .WithMany(x => x.EnumFields)
+              .HasForeignKey(x => x.EnumTypeId)
               .IsRequired()
               .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.EnumType)
-             .WithMany(x => x.Fields)
-             .HasForeignKey(x => x.EnumTypeId)
-             .IsRequired(false)
-             .OnDelete(DeleteBehavior.Restrict);
+           
 
 
         }

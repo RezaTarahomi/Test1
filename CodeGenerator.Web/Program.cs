@@ -1,14 +1,23 @@
+using Application.Entities;
+using Application.Framework;
 using Database.Data;
 using Microsoft.EntityFrameworkCore;
+using Persistance;
+using Persistance.Entities;
+using Persistance.UnitOfWork;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation(); 
 builder.Services.AddDbContext<CodeGeneratorDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("CodGenerationConnection")));
 
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDataContext, DataContext>();
+builder.Services.AddScoped<IEntityRepository, EntityRepository>();
 
 var app = builder.Build();
 

@@ -24,6 +24,12 @@ namespace CodeGenerator.Test.Unit.TestBuilders
             return this;
         }
 
+        public MethodSignBuilder WithResponseVariableName(string variableName)
+        {
+            _method.ResponseVariableName = variableName;
+            return this;
+        }
+
         public MethodSignBuilder WithParameters(string name, string type)
         {
             _method.Parameters.Add(new ClassPropertyModel

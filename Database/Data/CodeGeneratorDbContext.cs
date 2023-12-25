@@ -18,6 +18,8 @@ namespace Database.Data
         public DbSet<Entity> Entities { get; set; }
         public DbSet<Field> Fields { get; set; }        
         public DbSet<EntityParent> EntityParents { get; set; }
+        public DbSet<EnumType> EnumTypes { get; set; }
+        public DbSet<EnumField> EnumFields { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -27,6 +29,7 @@ namespace Database.Data
             builder.ApplyConfiguration(new ResponseParameterConfig());
             builder.ApplyConfiguration(new FieldConfig());
             builder.ApplyConfiguration(new EntityParentConfig());
+            builder.ApplyConfiguration(new EnumFieldConfig());
         }
     }
 }

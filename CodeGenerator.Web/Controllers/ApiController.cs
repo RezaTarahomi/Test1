@@ -46,7 +46,15 @@ namespace CodeGenerator.Web.Controllers
 
             try
             {
+                 var entityDirectorypath = @"E:\DotNetProjects\Test\CodeGenerator\Database\Data\Entities\";
 
+                var entities = EntityGenerator.GetEntitiesFromDirectory(entityDirectorypath);
+                if (entities.Any())
+                {
+               
+                await _context.Entities.AddRangeAsync(entities);
+                await _context.SaveChangesAsync();
+                }
 
             }
             catch (Exception ex)
