@@ -31,6 +31,7 @@ namespace Persistance.Entities
                 .Include(x=>x.Fields)
                 .ThenInclude(x=>x.EnumType)
                 .ThenInclude(x=>x.EnumFields)
+                .Include(x=>x.EntityParents)
                 .AsNoTracking()
                 .ToListAsync();
         }

@@ -203,7 +203,7 @@ namespace CodeGenerator.Core
 
                 foreach (var property in properties)
                 {
-                    var field = new Field { Name = property.Name, Type = property.Type };
+                    var field = new Field { Name = property.Name, Type = property.Type, Description=property.Description };
                     
 
                     if (entitiesName.Contains(property.Type))
@@ -218,7 +218,8 @@ namespace CodeGenerator.Core
 
                     if (enumTypesName.Contains(property.Type))
                     {
-                        field.EnumType = enumTypes.FirstOrDefault(x=>x.Name==property.Type);                        
+                        field.EnumType = enumTypes.FirstOrDefault(x=>x.Name==property.Type);  
+                        field.IsEnum = true;
                     }
 
                     entity.Fields.Add(field);

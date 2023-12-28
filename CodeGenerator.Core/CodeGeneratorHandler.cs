@@ -87,6 +87,17 @@ namespace CodeGenerator.Core
                 var typeParamsOrNull = (property.Type as GenericNameSyntax)?.TypeArgumentList.Arguments;
                 field.Name = property.Identifier.ValueText;
 
+                var attributeList = property.AttributeLists.FirstOrDefault();
+                var displayAttribute = attributeList?.Attributes.FirstOrDefault(a => a.Name.ToString() == "Display");
+                if (displayAttribute != null)
+                {
+                    field.Description = displayAttribute.ArgumentList.Arguments
+                        .FirstOrDefault(a => a.NameEquals.Name.Identifier.ValueText == "Name")?
+                        .Expression.ToString()
+                        .Replace("\"","");                    
+                    
+                }
+
                 fields.Add(field);
             }
 
@@ -105,6 +116,16 @@ namespace CodeGenerator.Core
                 field.Type = typeString;
                
                 field.Name = property.Declaration.Variables.First().Identifier.ValueText;
+
+                var attributeList = property.AttributeLists.FirstOrDefault();
+                var displayAttribute = attributeList?.Attributes.FirstOrDefault(a => a.Name.ToString() == "Display");
+                if (displayAttribute != null)
+                {
+                    field.Description = displayAttribute.ArgumentList.Arguments
+                        .FirstOrDefault(a => a.NameEquals.Name.Identifier.ValueText == "Name")?
+                        .Expression.ToString()
+                        .Replace("\"", "");
+                }
 
                 fields.Add(field);
             }

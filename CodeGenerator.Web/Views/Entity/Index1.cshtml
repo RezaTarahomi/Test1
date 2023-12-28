@@ -40,37 +40,36 @@
 
         <div class="form-group col-md-4">
             <label asp-for="Domain" class="control-label"></label>
-            <select asp-for="Domain" class="form-select mt-0" asp-items="@Html.GetEnumSelectList<Domains>()" aria-label="Default select example">
+            <select asp-for="Domain" class="form-select" asp-items="@Html.GetEnumSelectList<Domains>()" aria-label="Default select example">
                 <option selected="">انتخاب کنید...</option>
             </select>
             <span asp-validation-for="Domain" class="text-danger"></span>
         </div>
-    </div>
-    <div class="row form-group">
+
+
         <div class="col-md-4 form-group">
-            <label asp-for="ParentId" class="control-label"></label>
+            <label asp-for="ParentId" class="form-label"></label>
             <select asp-for="ParentId" class="form-select" asp-items="@(new SelectList(ViewBag.Parents,"Id","Caption"))">
                 <option selected="">انتخاب کنید...</option>
             </select>
         </div>
 
-        <div class="form-group col-md-4" style="margin-top: 2rem !important ">
+        <div class="form-group col-md-4">
             <label asp-for="IsOneToOne" class="control-label"></label>
             <input asp-for="IsOneToOne" type="checkbox" class="form-check-input" />
             <span asp-validation-for="IsOneToOne" class="text-danger"></span>
 
-
         </div>
     </div>
-
 
     <div class="form-group">
 
         <div class="form-group">
             <label asp-for="Path" class="control-label col-md-2 "></label>
-            <input asp-for="Path" class="form-control" />
-            <span asp-validation-for="Path" class="text-danger"></span>
-
+            <div class="col-md-10">
+                <input asp-for="Path" class="form-control" />
+                <span asp-validation-for="Path" class="text-danger"></span>
+            </div>
         </div>
 
 
@@ -124,18 +123,15 @@
                 </div>
 
                 <div class="col-md-2">
-                    <div class="mt-3">
-                        <button type="button" class="addField btn  btn-success mx-2 mt-3"> + </button>
-                        <button type="button" class="deleteButton btn  btn-danger mt-3">DeleteField</button>
-                    </div>
+                    <div class="mt-3"><button type="button" class="addField btn btn-success mx-2 mt-3"> + </button></div>
                 </div>
             </div>
 
-            <div class="col-md-12">
+            <div class="col-md-10">
                 <table id="data-table" class="table entityTable">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>Id</th>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Description</th>
@@ -148,7 +144,7 @@
                         {
 
                             <tr class="fieldtr">
-                                <td class="fieldCheckbox" enumid="@(entity.IsEnum?entity.EnumType.Id:0)" id="@entity.Id"> <input type="checkbox" /> </td>
+                                <td enumId="@(entity.IsEnum?entity.EnumType.Id:0)">@entity.Id</td>
                                 <td>@entity.Name</td>
                                 <td>@entity.Type</td>
                                 <td>@entity.Description</td>
@@ -159,7 +155,7 @@
                                     }
                                     else
                                     {
-                                        <input class="isEnum" type="checkbox" disabled="disabled" name="isEnum" />
+                                        <input class="isEnum" type="checkbox" name="isEnum" />
                                     }
                                 </td>
 
@@ -167,6 +163,7 @@
 
                                     <button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button>
                                     <button type="button" class="saveButton btn btn-sm btn-outline-success" style="display:none;">Save</button>
+                                    <button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button>
                                     @if (entity.IsEnum)
                                     {
                                         <button type="button" class="showEnum btn btn-sm btn-outline-info">EnumDetail</button>
@@ -180,13 +177,13 @@
                             @if (entity.IsEnum)
                             {
                                 <tr class="addToEnumTable" style="display:none">
-                                    <td style="padding-left:40px" colspan="5">
+                                    <td colspan="5">
                                         <div class=" row form-group">
 
                                             <div class="col-md-3">
                                                 <label class="form-label">Name</label>
                                                 <div>
-                                                    <input type='text' class="fieldEnumName form-control" enumId="@entity.EnumType.Id" />
+                                                    <input type='text' class="fieldEnumName form-control" />
                                                 </div>
                                             </div>
 
@@ -204,23 +201,20 @@
                                             </div>
 
                                             <div class="col-md-3">
-                                                <div class="mt-3">
-                                                    <button type="button" class="addEnumField btn btn-success mt-3 mx-2"> + </button>
-                                                    <button type="button" class="deleteEnum btn  btn-outline-danger mt-3">DeleteEnum</button>
-                                                </div>
+                                                <div class="mt-3"><button type="button" class="addEnumField btn btn-success mx-2 mt-3"> + </button></div>
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr class="addToEnumTable" style="display:none">
-                                    <td style="padding-left:40px" colspan="5">
+                                    <td colspan="5">
                                         <table class="enumTable table" style="background-color:#f4f4f4">
                                             @if (entity.EnumType != null && entity.EnumType.EnumFields != null && entity.EnumType.EnumFields.Any())
                                             {
                                                 @foreach (var item in entity.EnumType.EnumFields)
                                                 {
                                                     <tr class="enumtabletr">
-                                                        <td class="enumCheckbox" enumid="@(entity.IsEnum?entity.EnumType.Id:0)" id="@item.Id"><input type="checkbox" /></td>
+                                                        <td>@item.Id</td>
                                                         <td>@item.Name</td>
                                                         <td>@item.Value</td>
                                                         <td>@item.Description</td>
@@ -228,7 +222,7 @@
 
                                                             <button type="button" class="editEnum btn btn-sm btn-outline-warning">EditRow</button>
                                                             <button type="button" class="saveEnum btn btn-sm btn-outline-success" style="display:none;">Save</button>
-
+                                                            <button type="button" class="deleteEnum btn btn-sm btn-outline-danger">Delete</button>
 
                                                         </td>
                                                     </tr>
@@ -256,13 +250,13 @@
 <script>
     function addRowToTable(name, type, desc) {
         var newRow = $('<tr class="fieldtr">');
-        var cell1 = $('<td class="fieldCheckbox" enumid="0" id="0">').html('<input type="checkbox" />');
+        var cell1 = $('<td>').text('');
         var cell2 = $('<td>').text(name);
         var cell3 = $('<td>').text(type);
         var cell4 = $('<td>').text(desc);
         var cell5 = $('<td>').html('<input class="isEnum" type="checkbox" name="isEnum" />');
         var operationCol = '<button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button> ' +
-            '<button type="button" class="saveButton btn btn-sm btn-outline-success" >Save</button> ' +
+            '<button type="button" class="saveButton btn btn-sm btn-outline-success" style="display:none;">Save</button> ' +
             '<button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button> '
             ;
         var cell6 = $('<td>').html(operationCol);
@@ -271,43 +265,19 @@
     }
 </script>
 <script>
-    function addRowToEnumTable(name, type, desc, enumTypeId, element) {
+    function addRowToEnumTable(name, type, desc, element) {
         var newRow = $('<tr class="enumtabletr">');
-        var cell1 = $('<td class="enumCheckbox" enumid="' + enumTypeId + '" id="0">').html('<input type="checkbox" />');
+        var cell1 = $('<td>').text('');
         var cell2 = $('<td>').text(name);
         var cell3 = $('<td>').text(type);
         var cell4 = $('<td>').text(desc);
         var operationCol = '<button type="button" class="editEnum btn btn-sm btn-outline-warning">EditRow</button> ' +
-            '<button type="button" class="saveEnum btn btn-sm btn-outline-success" >Save</button> ' +
+            '<button type="button" class="saveEnum btn btn-sm btn-outline-success" style="display:none;">Save</button> ' +
             '<button type="button" class="deleteEnum btn btn-sm btn-outline-danger">Delete</button> '
             ;
         var cell5 = $('<td>').html(operationCol);
         newRow.append(cell1, cell2, cell3, cell4, cell5);
         element.closest('tr').next().find('.enumTable').append(newRow);
-    }
-</script>
-<script>
-    function deleteByIds(url, ids, rows) {
-
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: {
-                ids: ids
-            },
-            success: function () {
-
-                for (var i = 0; i < rows.length; i++) {
-                    rows[i].hide();
-
-                }
-
-            }
-            ,
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
-        });
     }
 </script>
 
@@ -385,89 +355,29 @@
             row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + name + "'>");
             row.find("td:eq(2)").html("<input type='text' class='form-control edit-cell' value='" + type + "'>");
             row.find("td:eq(3)").html("<input type='text' class='form-control edit-cell' value='" + desc + "'>");
-            row.find("td:eq(4)").find('input').prop('disabled', $(this).prop('disabled'))
 
             $(this).hide();
             row.find(".saveButton").show();
-
         });
         $("body").on("click", '.deleteButton', function () {
-            var rows = [];
-            //find selected field Ids
-            var ids = [];
-            $(".fieldCheckbox").each(function () {
-
-                if ($(this).find('input').is(':checked')) {
-
-                var id = $(this).prop("id");
-
-                    if (id > 0)
-                    {
-                        ids.push(id);
-                        rows.push($(this).closest('tr'))
-                    }
-                }
-            });
-            console.log(rows);
-            //call method to delete
-            deleteByIds('/Entity/DeleteFields',ids,rows);
+            $(this).closest("tr").remove();
         });
-
-
 
         $("body").on("click", '.saveButton', function () {
             var row = $(this).closest("tr");
 
-            var id = row.find("td:eq(0)").prop("id");
-            var enumId = row.find("td:eq(0)").attr("enumid");
-
             var name = row.find("td:eq(1) input").val();
             var type = row.find("td:eq(2) input").val();
             var desc = row.find("td:eq(3) input").val();
-            var isEnum = row.find("td:eq(4)").find('input').is(':checked');
+
 
             row.find("td:eq(1)").text(name);
             row.find("td:eq(2)").text(type);
             row.find("td:eq(3)").text(desc);
-            row.find("td:eq(4)").find('input').prop('disabled', !$(this).prop('disabled'))
 
-            var field = {
-                id : id,
-                entityId : '@Model.Id',
-                enumTypeId : enumId,
-                name : name,
-                type : type,
-                description: desc,
-                isEnum:isEnum
-            };
-
-            //upsert Field
-            upsertField(field, $(this))
-
-
-
+            $(this).hide();
+            row.find(".editButton").show();
         });
-
-        function upsertField(field, element) {
-
-            $.ajax({
-                url: '/Entity/UpsertField',
-                method: 'POST',
-                data: {
-                    model: field
-                },
-                success: function (data) {
-
-                    element.hide();
-                    element.closest("tr").find(".editButton").show();
-                }
-                ,
-                error: function (xhr, status, error) {
-                    console.log(error);
-                }
-            });
-        }
-
 
         $(".addField").on("click", function () {
 
@@ -486,9 +396,9 @@
                 id: $("#Id").val(),
                 name: $("#Name").val(),
                 path: $("#Path").val(),
-                domain: $("#Domain").val(),
-                parentId: $("#ParentId").val(),
-                isOneToOne: $("#IsOneToOne").is(':checked')
+                domain: $("#Domain").val()
+                parentId: $("#ParentId").val()
+                isOneToOne: $("#Domain").val()
             };
 
             var fields = [];
@@ -560,84 +470,33 @@
             $(this).hide();
             row.find(".saveEnum").show();
         });
-
         $("body").on("click", '.deleteEnum', function () {
-            var rows = [];
-            //find selected field Ids
-            var ids = [];
-            $(".enumCheckbox").each(function () {
-
-                if ($(this).find('input').is(':checked')) {
-
-                    var id = $(this).prop("id");
-
-                    if (id > 0) {
-                        ids.push(id);
-                        rows.push($(this).closest('tr'))
-                    }
-                }
-            });
-
-            //call method to delete
-            deleteByIds('/Entity/DeleteEnumFields', ids, rows);
+            $(this).closest("tr").remove();
         });
 
         $("body").on("click", '.saveEnum', function () {
             var row = $(this).closest("tr");
 
-            var id = row.find("td:eq(0)").prop("id");
-            var enumId = row.find("td:eq(0)").attr("enumid");
-
             var name = row.find("td:eq(1) input").val();
-            var value = row.find("td:eq(2) input").val();
+            var type = row.find("td:eq(2) input").val();
             var desc = row.find("td:eq(3) input").val();
 
 
             row.find("td:eq(1)").text(name);
-            row.find("td:eq(2)").text(value);
+            row.find("td:eq(2)").text(type);
             row.find("td:eq(3)").text(desc);
 
-            var enumField = {
-                id: id,
-                enumTypeId: enumId,
-                name: name,
-                value: value,
-                description: desc,
-            };
-
-
-            upsertEnum(enumField, $(this))
-
-
+            $(this).hide();
+            row.find(".editEnum").show();
         });
-
-        function upsertEnum(enumField, element) {
-            $.ajax({
-                url: '/Entity/UpsertEnum',
-                method: 'POST',
-                data: {
-                    model: enumField
-                },
-                success: function (data) {
-
-                    element.hide();
-                    element.closest("tr").find(".editEnum").show();
-                }
-                ,
-                error: function (xhr, status, error) {
-                    console.log(error);
-                }
-            });
-        }
 
         $(".addEnumField").on("click", function () {
 
             var name = $(this).closest("td").find(".fieldEnumName").val();
-            var enumTypeId = $(this).closest("td").find(".fieldEnumName").attr("enumId");
             var value = $(this).closest("td").find(".fieldEnumValue").val();
             var desc = $(this).closest("td").find(".fieldEnumDesc").val();
 
-            addRowToEnumTable(name, value, desc, enumTypeId, $(this))
+            addRowToEnumTable(name, value, desc, $(this))
 
         });
 

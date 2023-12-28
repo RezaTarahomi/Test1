@@ -1,5 +1,6 @@
 using Application.Entities;
 using Application.Framework;
+using CodeGenerator.Core.Services;
 using Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Persistance;
@@ -18,6 +19,7 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("CodGenerationCon
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDataContext, DataContext>();
 builder.Services.AddScoped<IEntityRepository, EntityRepository>();
+builder.Services.AddScoped<IFieldService, FieldService>();
 
 var app = builder.Build();
 

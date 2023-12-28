@@ -1,4 +1,6 @@
-﻿namespace CodeGenerator.Web.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CodeGenerator.Web.Models
 {
     public class EnumTypeViewModel
     {
@@ -20,5 +22,16 @@
         public int? Value { get; set; }
         public int? Order { get; set; }
         public string? Description { get; set; }        
+    }
+
+    public class UpsertEnumFieldViewModel
+    {
+        public int? Id { get; set; }
+        [Required]
+        public string Name { get; set; }
+        public int? Value { get; set; }
+        public int? Order { get; set; }
+        public string? Description { get; set; }
+        public int EnumTypeId { get; set; }
     }
 }

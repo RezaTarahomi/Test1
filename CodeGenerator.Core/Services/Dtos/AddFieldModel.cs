@@ -4,21 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Database.Data.Entities
+namespace CodeGenerator.Core.Services.Dtos
 {
-    public class Field
+    public class AddFieldModel
     {
-        public int Id { get; set; }
+       
+        public int EntityId { get; set; }
+        public int? EnumTypeId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public string? Description { get; set; }
         public bool IsEnum { get; set; }
+    }
 
-        public int EntityId { get; set; }
-        public Entity Entity { get; set; }
-
-        public int? EnumTypeId { get; set; }
-        public EnumType EnumType { get; set; }
-
+    public class EditFieldModel:AddFieldModel
+    {
+        public int Id { get; set; }
+        
     }
 }
