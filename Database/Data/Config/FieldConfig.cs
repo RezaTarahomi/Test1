@@ -22,6 +22,12 @@ namespace Database.Data.Config
               .IsRequired()
               .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(x => x.Parent)
+             .WithMany(x=>x.EntityChilds)
+             .HasForeignKey(x => x.ParentId)
+             .IsRequired(false)
+             .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(x => x.EnumType)
              .WithMany(x => x.Fields)
              .HasForeignKey(x => x.EnumTypeId)

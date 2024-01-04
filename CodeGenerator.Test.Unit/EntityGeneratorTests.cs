@@ -1,13 +1,12 @@
-﻿using CodeGenerator.Core;
+﻿using Application.Entities;
+using CodeGenerator.Core;
 using CodeGenerator.Core.Dtos;
 using CodeGenerator.Core.Extensions;
 using CodeGenerator.Test.Unit.TestBuilders;
 using Database.Data.Entities;
-using Database.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace CodeGenerator.Test.Unit
@@ -217,5 +216,40 @@ namespace CodeGenerator.Test.Unit
             Assert.Equal(1, result.Value);
         }
 
+        [Fact]
+        public void generate_enum()
+        {
+            var path = "Database\\Entities";
+
+            var enumName = "AppType";
+
+            var enumType = new EnumType
+            {
+                Name = enumName,
+               
+                EnumFields = new List<EnumField>
+                {
+                    new EnumField{ Name="Kiosk", Value=1},
+                    new EnumField{ Name="Panel", Value=2},
+                }
+            };
+
+            EntityGenerator.GenerateEnum(path, enumType);
+
+            var fullPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, enumName + ".cs");
+
+            var expected = File.Exists(fullPath);
+
+            Assert.True(expected);
+
+            //if (File.Exists(fullPath))
+            //{
+            //    File.Delete(fullPath);
+            //}
+
+        }
+
+        //[Fact]
+        //public void addParent
     }
 }

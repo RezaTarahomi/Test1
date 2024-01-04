@@ -12,11 +12,16 @@ namespace Database.Data.Entities
         public string Name { get; set; }
         public string Type { get; set; }
         public string? Description { get; set; }
-        public bool IsEnum { get; set; }
+        
+
+        public bool IsParent { get; set; }
+        public int? ParentId { get; set; }
+        public Entity Parent { get; set; }
 
         public int EntityId { get; set; }
         public Entity Entity { get; set; }
 
+        public bool IsEnum { get; set; }
         public int? EnumTypeId { get; set; }
         public EnumType EnumType { get; set; }
 

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
+using System.Reflection;
 
 namespace CodeGenerator.Core
 {
@@ -23,7 +24,11 @@ namespace CodeGenerator.Core
 
         public static string GetAppRoot()
         {
-            return Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
+            
+            var assembly = Assembly.GetAssembly(typeof(DirectoryHandler));
+            var dir= Path.GetDirectoryName(assembly.Location);
+            var root= Directory.GetParent(dir).Parent.Parent.Parent.FullName;
+            return root;
         }
 
         public static string GetNameSpace(string path)

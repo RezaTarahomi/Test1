@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -22,6 +23,13 @@ namespace CodeGenerator.Core
             // Create a CodeCompileUnit
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 
+            //Add Annotation NameSpace
+            if (model.Properties.Any(x=>!string.IsNullOrEmpty(x.Description)))
+            {
+                CodeNamespace blankNamespaces = new CodeNamespace();
+                blankNamespaces.Imports.Add(new CodeNamespaceImport("System.ComponentModel.DataAnnotations"));
+                compileUnit.Namespaces.Add(blankNamespaces);
+            }
             // Create a namespace
             CodeNamespace codeNamespace = new CodeNamespace(path.Replace("\\", "."));
             compileUnit.Namespaces.Add(codeNamespace);
@@ -32,9 +40,28 @@ namespace CodeGenerator.Core
 
             foreach (var property in model.Properties)
             {
+                if (property.IsEnum)
+                {
+                    GenerateEnum(path, property.EnumType);
+                }
+
+                if (property.Type == "string")
+                {
+                    property.Type = "System.String";
+                }
                 CodeMemberField idField = new CodeMemberField(property.Type, property.Name);
                 idField.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
                 idField.Name += " { get; set; }//";
+
+                
+                if ( !string.IsNullOrEmpty(property.Description) && property.Description!="null")
+                {
+                    var attr = new CodeAttributeDeclaration(new CodeTypeReference(typeof(DisplayAttribute)));                    
+                    attr.Arguments.Add(new CodeAttributeArgument("Name", new CodePrimitiveExpression(property.Description)));
+
+                    idField.CustomAttributes.Add(attr);
+                }
+
 
                 newClass.Members.Add(idField);
             }
@@ -179,6 +206,7 @@ namespace CodeGenerator.Core
             var entities = new List<Entity>();
             var entityFiles = Directory.GetFiles(entityDirectorypath);
 
+
             var enumTypes = GetEnumsFromDirectory(entityDirectorypath);
 
             foreach (var entityFile in entityFiles)
@@ -189,7 +217,7 @@ namespace CodeGenerator.Core
                     entity.Name = CodeGeneratorHandler.GetClassName(entityFile);
                     entity.Path = entityFile;
                     entities.Add(entity);
-                }                
+                }
             }
 
             foreach (var entityFile in entityFiles)
@@ -203,22 +231,22 @@ namespace CodeGenerator.Core
 
                 foreach (var property in properties)
                 {
-                    var field = new Field { Name = property.Name, Type = property.Type, Description=property.Description };
-                    
+                    var field = new Field { Name = property.Name, Type = property.Type, Description = property.Description };
+
 
                     if (entitiesName.Contains(property.Type))
                     {
                         entity.EntityParents.Add(new EntityParent
                         {
-                            OneToOne =  false ,
+                            OneToOne = false,
                             Entity = entity,
-                            Parent =entities.FirstOrDefault(x=>x.Name==property.Type)
+                            Parent = entities.FirstOrDefault(x => x.Name == property.Type)
                         });
                     }
 
                     if (enumTypesName.Contains(property.Type))
                     {
-                        field.EnumType = enumTypes.FirstOrDefault(x=>x.Name==property.Type);  
+                        field.EnumType = enumTypes.FirstOrDefault(x => x.Name == property.Type);
                         field.IsEnum = true;
                     }
 
@@ -229,6 +257,36 @@ namespace CodeGenerator.Core
             return entities;
         }
 
+        public static void GenerateEnum(string path, EnumType enumType)
+        {
+            // Create a CodeCompileUnit
+            CodeCompileUnit compileUnit = new CodeCompileUnit();
+
+            // Create a namespace
+            CodeNamespace codeNamespace = new CodeNamespace(path.Replace("\\", "."));
+            compileUnit.Namespaces.Add(codeNamespace);
+            CodeTypeDeclaration newClass = new CodeTypeDeclaration(enumType.Name);
+            newClass.IsEnum = true;
+            newClass.TypeAttributes = TypeAttributes.Public;
+
+            var value = 0;
+
+            foreach (var field in enumType.EnumFields)
+            {
+                CodeMemberField idField = new CodeMemberField("int", field.Name);
+                idField.Attributes = MemberAttributes.Public ;
+                idField.InitExpression = new CodePrimitiveExpression(++value);
+
+                newClass.Members.Add(idField);
+            }
+
+           
+            codeNamespace.Types.Add(newClass);
+
+            CodeGeneratorHandler.GenerateCSharpClassFile(compileUnit, enumType.Name, path);
+
+        }
+
         public static List<EnumType> GetEnumsFromDirectory(string enumDirectorypath)
         {
             var enums = new List<EnumType>();
@@ -236,7 +294,7 @@ namespace CodeGenerator.Core
 
             foreach (var enumFile in enumFiles)
             {
-                var syntaxNode = CodeGeneratorHandler.GetEnumType(enumFile);               
+                var syntaxNode = CodeGeneratorHandler.GetEnumType(enumFile);
                 if (syntaxNode is EnumDeclarationSyntax enumDeclaration)
                 {
                     var enumType = new EnumType();
@@ -247,10 +305,10 @@ namespace CodeGenerator.Core
                     {
                         enumType.EnumFields.Add(field);
                     }
-                enums.Add(enumType);
+                    enums.Add(enumType);
                 }
 
-            }           
+            }
 
             return enums;
         }

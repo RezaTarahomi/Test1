@@ -12,8 +12,8 @@ namespace Database.Data.Entities
         public Entity()
         {
             Fields = new HashSet<Field>();
-            EntityParents = new HashSet<EntityParent>();
-            EntityChilds = new HashSet<EntityParent>();
+          //  EntityParents = new HashSet<EntityParent>();
+            EntityChilds = new HashSet<Field>();
         }
         public int Id { get; set; }
         [Display(Name="نام")]
@@ -24,7 +24,7 @@ namespace Database.Data.Entities
         public string? Description { get; set; }
 
         public ICollection<Field> Fields { get; set; }
-        public ICollection<EntityParent> EntityParents { get; set; }
-        public ICollection<EntityParent> EntityChilds { get; set; }
+         
+        public ICollection<Field> EntityChilds { get; set; }
     }
 }

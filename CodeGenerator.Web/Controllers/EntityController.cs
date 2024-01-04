@@ -97,26 +97,27 @@ namespace YourNamespace.Controllers
                     Description = x.Description,
                     ParentId = x.EntityParents != null ? x.EntityParents.Where(x => x.EntityId == x.Id).Select(x => x.ParentId).FirstOrDefault() : null,
                     IsOneToOne = x.EntityParents != null ? x.EntityParents.Where(x => x.EntityId == x.Id).Select(x => x.OneToOne).FirstOrDefault() : false,
-                    Fields = x.Fields.Select(x => new FieldViewModel
+                    Fields = x.Fields.Select(y => new FieldViewModel
                     {
-                        Id = x.Id,
-                        Name = x.Name,
-                        Type = x.Type,
-                        Description = x.Description,
-                        IsEnum = x.IsEnum,
-                        EnumType = x.EnumType != null ? new EnumTypeViewModel
+                        Id = y.Id,
+                        Name = y.Name,
+                        Type = y.Type,
+                        IsParent=y.IsParent,                        
+                        Description = y.Description,
+                        IsEnum = y.IsEnum,
+                        EnumType = y.EnumType != null ? new EnumTypeViewModel
                         {
-                            Id = x.EnumType.Id,
-                            Description = x.EnumType.Description,
-                            Name = x.EnumType.Name,
-                            Type = x.EnumType.Type,
-                            EnumFields = x.EnumType.EnumFields.Select(x => new EnumFieldViewModel
+                            Id = y.EnumType.Id,
+                            Description = y.EnumType.Description,
+                            Name = y.EnumType.Name,
+                            Type = y.EnumType.Type,
+                            EnumFields = y.EnumType.EnumFields.Select(e => new EnumFieldViewModel
                             {
-                                Name = x.Name,
-                                Value = x.Value,
-                                Description = x.Description,
-                                Order = x.Order,
-                                Id = x.Id
+                                Name = e.Name,
+                                Value = e.Value,
+                                Description = e.Description,
+                                Order = e.Order,
+                                Id = e.Id
                             }).ToList()
                         } : null
 
@@ -140,37 +141,40 @@ namespace YourNamespace.Controllers
         {
 
 
-            var entity = _maper.Map<Entity>(model);
-
-
+            var entity = await _context.Entities.FirstOrDefaultAsync(x => x.Id == model.Id);
             try
             {
-                await _context.Database.BeginTransactionAsync();               
-                
+                await _context.Database.BeginTransactionAsync();
+
 
                 var parent = await _context.EntityParents.Where(x => x.EntityId == model.Id && x.ParentId == model.ParentId).FirstOrDefaultAsync();
+
                 if (model.ParentId > 0 && parent == null)
                 {
                     var entityParent = new EntityParent
                     {
                         ParentId = model.ParentId.Value,
                         Entity = entity,
-                        OneToOne = model.IsOneToOne
+                        OneToOne = model.IsOneToOne,                        
 
                     };
                     entity.EntityParents.Add(entityParent);
                 }
-                else if(model.ParentId > 0 && parent != null)
+                else if (model.ParentId > 0 && parent != null)
                 {
                     parent.ParentId = model.ParentId.Value;
                     parent.OneToOne = model.IsOneToOne;
+                    
                 }
-                else if (model.ParentId ==null && parent != null)
+                else if (model.ParentId == null && parent != null)
                 {
-                   _context.RemoveRange(parent);
-                }               
+                    _context.RemoveRange(parent);
+                }
 
-                _context.Update(entity);
+                entity.Domain = model.Domain;
+                entity.Name = model.Name;
+                entity.Path = model.Path;
+
                 await _context.SaveChangesAsync();
 
                 await _context.Database.CommitTransactionAsync();
@@ -191,9 +195,7 @@ namespace YourNamespace.Controllers
                 throw;
             }
 
-            return RedirectToAction(nameof(Index));
-
-            return View(entity);
+            return Json(true);
         }
 
         [HttpPost]
@@ -207,16 +209,16 @@ namespace YourNamespace.Controllers
                 }
                 await _context.Database.BeginTransactionAsync();
 
-                if (!(model.Id>0))
+                if (!(model.Id > 0))
                 {
                     var dto = _maper.Map<AddFieldModel>(model);
 
-                    await _fieldService.Add(dto);                   
+                    await _fieldService.Add(dto);
                 }
                 else
                 {
                     var dto = _maper.Map<EditFieldModel>(model);
-                    await _fieldService.Edit(dto);                   
+                    await _fieldService.Edit(dto);
                 }
 
                 await _context.Database.CommitTransactionAsync();
@@ -267,7 +269,7 @@ namespace YourNamespace.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteFields(int[] ids)
         {
-            if (ids.Length<1)
+            if (ids.Length < 1)
             {
                 return Json(false);
             }
@@ -311,6 +313,55 @@ namespace YourNamespace.Controllers
 
                 throw;
             }
+            return Json(true);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateClassFile(int id)
+        {
+            //get Entity
+            var entity = await _context.Entities.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (entity == null)
+            {
+                return Json(false);
+            }
+
+            //Get Class Path
+            var path = Path.Combine(ProjectStructure.Domain, ProjectStructure.EntitiesFolder);
+
+            entity.Path = Path.Combine(DirectoryHandler.GetAppRoot(), path, entity.Name);    
+            await _context.SaveChangesAsync();
+
+
+            //Create EntityCreateModel
+
+            var entityModel = new EntityCreateModel { Name = entity.Name };
+
+            entityModel.Properties = await _context.Fields
+               .Where(x => x.EntityId == entity.Id)
+               .Select(x => new ClassPropertyModel
+               {
+                   Name = x.Name,
+                   Description = x.Description,
+                   Type = x.Type,
+                   MemberAttributes= System.CodeDom.MemberAttributes.Public,
+                   IsEnum = x.IsEnum,
+                   EnumType= x.IsEnum? new EnumType
+                   {
+                       Name = x.Type,
+                       EnumFields = x.EnumType.EnumFields.Select(y => new EnumField
+                       {
+                           Name = y.Name,
+                           Value = y.Value,
+                       }).ToList()
+                   } :  new EnumType()
+               })
+               .ToListAsync();
+
+            //GenerateEntity
+            EntityGenerator.GenerateEntity(path, entityModel);
+
             return Json(true);
         }
 

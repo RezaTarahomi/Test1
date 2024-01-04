@@ -4,6 +4,7 @@ using Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeGenerator.Migrations
 {
     [DbContext(typeof(CodeGeneratorDbContext))]
-    partial class CodeGeneratorDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240104194325_addForeinkey")]
+    partial class addForeinkey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,7 +48,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Apis", (string)null);
+                    b.ToTable("Apis");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.Entity", b =>
@@ -72,7 +74,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Entities", (string)null);
+                    b.ToTable("Entities");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.EntityParent", b =>
@@ -101,7 +103,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("EntityParents", (string)null);
+                    b.ToTable("EntityParents");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.EnumField", b =>
@@ -133,7 +135,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("EnumTypeId");
 
-                    b.ToTable("EnumFields", (string)null);
+                    b.ToTable("EnumFields");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.EnumType", b =>
@@ -156,7 +158,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EnumTypes", (string)null);
+                    b.ToTable("EnumTypes");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.Field", b =>
@@ -193,7 +195,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("EnumTypeId");
 
-                    b.ToTable("Fields", (string)null);
+                    b.ToTable("Fields");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.ObjectType", b =>
@@ -222,7 +224,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("ObjectTypes", (string)null);
+                    b.ToTable("ObjectTypes");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.RequestParameter", b =>
@@ -264,7 +266,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("ApiId");
 
-                    b.ToTable("RequestParameters", (string)null);
+                    b.ToTable("RequestParameters");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.ResponseParameter", b =>
@@ -302,7 +304,7 @@ namespace CodeGenerator.Migrations
 
                     b.HasIndex("ObjectTypeId");
 
-                    b.ToTable("ResponseParameters", (string)null);
+                    b.ToTable("ResponseParameters");
                 });
 
             modelBuilder.Entity("Database.Data.Entities.EntityParent", b =>

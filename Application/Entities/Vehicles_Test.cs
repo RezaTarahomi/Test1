@@ -22,6 +22,6 @@ namespace Application.Entities
         
         public int VehicleModel_TestId { get; set; }//;
         
-        public Database.Entities.VehicleModel_Test VehicleModel_Test { get; set; }//;
+        public VehicleModel_Test VehicleModel_Test { get; set; }//;
     }
 }

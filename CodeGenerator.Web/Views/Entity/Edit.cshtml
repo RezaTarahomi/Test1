@@ -23,7 +23,7 @@
 
 <h2>Edit</h2>
 
-
+<button class="btn btn-outline-primary" onclick="createFile()">CreateFile</button>
 <form asp-action="Edit" id="editForm">
     <div class="row form-group">
         <h4>Entity</h4>
@@ -46,21 +46,21 @@
             <span asp-validation-for="Domain" class="text-danger"></span>
         </div>
     </div>
-    <div class="row form-group">
+    <div class="row form-group mt-3">
         <div class="col-md-4 form-group">
             <label asp-for="ParentId" class="control-label"></label>
             <select asp-for="ParentId" class="form-select" asp-items="@(new SelectList(ViewBag.Parents,"Id","Caption"))">
                 <option selected="">انتخاب کنید...</option>
             </select>
+        </div>        
+               
+
+        <div class="col-md-2">
+            <div class="mt-3">
+                <button type="button" class="addParent btn  btn-success mx-2 mt-3"> + </button>
+            </div>
         </div>
 
-        <div class="form-group col-md-4" style="margin-top: 2rem !important ">
-            <label asp-for="IsOneToOne" class="control-label"></label>
-            <input asp-for="IsOneToOne" type="checkbox" class="form-check-input" />
-            <span asp-validation-for="IsOneToOne" class="text-danger"></span>
-
-
-        </div>
     </div>
 
 
@@ -139,7 +139,8 @@
                             <th>Name</th>
                             <th>Type</th>
                             <th>Description</th>
-                            <th>IsEnum</th>
+                            <th>IsEnum</th>                            
+                            <th>IsParent</th>                            
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -151,7 +152,7 @@
                                 <td class="fieldCheckbox" enumid="@(entity.IsEnum?entity.EnumType.Id:0)" id="@entity.Id"> <input type="checkbox" /> </td>
                                 <td>@entity.Name</td>
                                 <td>@entity.Type</td>
-                                <td>@entity.Description</td>
+                                <td> @entity.Description</td>
                                 <td>
                                     @if (entity.IsEnum)
                                     {
@@ -161,6 +162,13 @@
                                     {
                                         <input class="isEnum" type="checkbox" disabled="disabled" name="isEnum" />
                                     }
+                                </td>
+                                <td>
+                                    @if (entity.IsParent)
+                                    {
+                                        <input class="isParent" type="checkbox" name="isParent" checked="checked" disabled="disabled" />
+                                    }
+                                    
                                 </td>
 
                                 <td>
@@ -254,6 +262,27 @@
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script>
+    function createFile() {
+        $.ajax({
+            url: '/Entity/CreateClassFile',
+            method: 'POST',
+            data: {
+                id: '@Model.Id'
+            },
+            success: function () {
+
+            }
+            ,
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+
+    }
+</script>
+
+
+<script>
     function addRowToTable(name, type, desc) {
         var newRow = $('<tr class="fieldtr">');
         var cell1 = $('<td class="fieldCheckbox" enumid="0" id="0">').html('<input type="checkbox" />');
@@ -261,13 +290,15 @@
         var cell3 = $('<td>').text(type);
         var cell4 = $('<td>').text(desc);
         var cell5 = $('<td>').html('<input class="isEnum" type="checkbox" name="isEnum" />');
+        var cell6 = $('<td>').text('');
         var operationCol = '<button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button> ' +
             '<button type="button" class="saveButton btn btn-sm btn-outline-success" >Save</button> ' +
             '<button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button> '
             ;
-        var cell6 = $('<td>').html(operationCol);
-        newRow.append(cell1, cell2, cell3, cell4, cell5, cell6);
+        var cell7 = $('<td>').html(operationCol);
+        newRow.append(cell1, cell2, cell3, cell4, cell5, cell6, cell7);
         $('.entityTable').append(newRow);
+
     }
 </script>
 <script>
@@ -391,6 +422,7 @@
             row.find(".saveButton").show();
 
         });
+
         $("body").on("click", '.deleteButton', function () {
             var rows = [];
             //find selected field Ids
@@ -443,9 +475,6 @@
 
             //upsert Field
             upsertField(field, $(this))
-
-
-
         });
 
         function upsertField(field, element) {
@@ -467,7 +496,48 @@
                 }
             });
         }
+        $(".addParent").on("click", function () {
 
+            var foreignKey = $("#ParentId option:selected").text()+"Id";
+            var parentType = $("#ParentId option:selected").text();
+            var type = 'int';
+            
+
+            addParentRowsToTable(foreignKey, type)
+            addParentRowsToTable(parentType, parentType)
+        });
+
+        function addParentRowsToTable(foreignKey, type) {
+            var newRow = $('<tr class="parent">');
+            var cell1 = $('<td class="fieldCheckbox" enumid="0" id="0">').html('<input type="checkbox" />');
+            var cell2 = $('<td>').text(foreignKey);
+            var cell3 = $('<td>').text(type);
+            var cell4 = $('<td>').text('');
+            var cell5 = $('<td>').html('');
+            var cell6 = $('<td>').html('<input class="isParent" type="checkbox" checked="checked" name="isParent" disabled="disabled" />');
+            var operationCol = '<button type="button" class="editParentButton btn btn-sm btn-outline-warning">EditRow</button> ' +
+                '<button type="button" class="saveParentButton btn btn-sm btn-outline-success" >Save</button> ' +
+                '<button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button> '
+                ;
+            var cell7 = $('<td>').html(operationCol);
+            newRow.append(cell1, cell2, cell3, cell4, cell5, cell6, cell7);
+            $('.entityTable').append(newRow);
+        }
+
+        $("body").on("click", '.editParentButton', function () {
+            var row = $(this).closest("tr");
+
+            var foreignKey = row.find("td:eq(1)").text();
+            var type = row.find("td:eq(2)").text();           
+
+            row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + foreignKey + "'>");
+            row.find("td:eq(2)").html("<input readonly='readonly' type='text' class='form-control edit-cell' value='" + type + "'>");
+            row.find("td:eq(3)").html("<input readonly='readonly' type='text' class='form-control edit-cell' value='" + '' + "'>");            
+
+            $(this).hide();
+            row.find(".saveButton").show();
+
+        });
 
         $(".addField").on("click", function () {
 
@@ -476,7 +546,6 @@
             var desc = $("#fieldDesc").val();
 
             addRowToTable(name, type, desc)
-
         });
 
         $("#editForm").submit(function (e) {
@@ -490,42 +559,6 @@
                 parentId: $("#ParentId").val(),
                 isOneToOne: $("#IsOneToOne").is(':checked')
             };
-
-            var fields = [];
-            $("#data-table").find('tr.fieldtr').each(function () {
-                var row = {};
-                // Your code to extract values from the table cells and assign them to the properties of the "row" object.
-                // For example, assuming the first cell contains a name and the second cell contains an age:
-                row.id = $(this).find('td:eq(0)').text();
-                row.name = $(this).find('td:eq(1)').text();
-                row.type = $(this).find('td:eq(2)').text();
-                row.description = $(this).find('td:eq(3)').text();
-
-                var isEnum = $(this).find('td:eq(4)').find('input').is(":checked");
-                row.IsEnum = isEnum;
-                if (isEnum) {
-                    var enumType = {};
-                    var enumFields = [];
-                    enumType.name = $(this).find('td:eq(2)').text();
-                    $(this).next().next().find('.enumtabletr').each(function () {
-                        enumFieldrow = {};
-                        enumFieldrow.name = $(this).find('td:eq(1)').text();
-                        enumFieldrow.value = $(this).find('td:eq(2)').text();
-                        enumFieldrow.description = $(this).find('td:eq(3)').text();
-                        enumFields.push(enumFieldrow)
-                    });
-                    enumType.enumFields = enumFields;
-                    row.enumType = enumType;
-                }
-                // Add the row object to the "rows" array.
-                fields.push(row);
-            });
-
-            entity.fields = fields;
-            // Perform any desired actions with the form data
-            var formData = $(this).serialize(); // Serializes the form data
-
-
             // Perform an AJAX request to submit the form data
             $.ajax({
                 url: "/Entity/Edit", // Replace with your controller and action method

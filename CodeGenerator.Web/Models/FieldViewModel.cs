@@ -10,6 +10,7 @@ namespace CodeGenerator.Web.Models
         public string Type { get; set; }
         public string? Description { get; set; }
         public bool IsEnum{ get; set; }
+        public bool IsParent{ get; set; }
 
         public  EnumTypeViewModel? EnumType { get; set; }
     }

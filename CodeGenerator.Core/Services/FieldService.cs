@@ -22,14 +22,22 @@ namespace CodeGenerator.Core.Services
 
             if (dto.IsEnum)
             {
-                var enumType = new EnumType
-                {
-                    Name = dto.Type,
-                };
-                await _context.EnumTypes.AddAsync(enumType);
-                await _context.SaveChangesAsync();
+                var dbEnumType = _context.EnumTypes.Where(x => x.Name == dto.Type).FirstOrDefault();
 
-                dto.EnumTypeId = enumType.Id;
+                if (dbEnumType == null)
+                {
+                    var enumType = new EnumType
+                    {
+                        Name = dto.Type,
+                    };
+                    await _context.EnumTypes.AddAsync(enumType);
+                    await _context.SaveChangesAsync();
+                    dto.EnumTypeId = enumType.Id;
+                }
+                else
+                {
+                    dto.EnumTypeId = dbEnumType.Id;
+                }
             }
 
             var field = new Field
@@ -52,11 +60,11 @@ namespace CodeGenerator.Core.Services
             var field = await _context.Fields.FindAsync(dto.Id);
 
 
-            if (dto.EnumTypeId > 0)
+            if (dto.IsEnum)
             {
-                if (dto.IsEnum)
+                if (dto.EnumTypeId > 0)
                 {
-                    var enumType = await _context.EnumTypes.FindAsync(dto.Id);
+                    var enumType = await _context.EnumTypes.FindAsync(dto.EnumTypeId);
 
                     if (dto.Type != enumType?.Name)
                     {
@@ -82,11 +90,33 @@ namespace CodeGenerator.Core.Services
                 }
                 else
                 {
-                    field.IsEnum = false;
-                    field.EnumTypeId = null;
+                    var enumType = _context.EnumTypes.Where(x => x.Name == dto.Type).FirstOrDefault();
 
+                    if (enumType != null)
+                    {
+                        field.EnumTypeId = enumType.Id;
+                    }
+                    else
+                    {
+                        var newEnumType = new EnumType
+                        {
+                            Name = dto.Type,
+                        };
+                        await _context.EnumTypes.AddAsync(newEnumType);
+                        await _context.SaveChangesAsync();
+
+
+                        field.EnumTypeId = newEnumType.Id;
+                    }
                 }
             }
+            else
+            {
+                field.IsEnum = false;
+                field.EnumTypeId = null;
+
+            }
+
 
             field.Name = dto.Name;
             field.Type = dto.Type;
@@ -116,11 +146,11 @@ namespace CodeGenerator.Core.Services
 
         public async Task EditEnumField(EditEnumFieldModel dto)
         {
-            var enumField = await _context.EnumFields.FindAsync(dto.Id);            
+            var enumField = await _context.EnumFields.FindAsync(dto.Id);
 
             enumField.Name = dto.Name;
             enumField.Value = dto.Value;
-            enumField.Description = dto.Description;           
+            enumField.Description = dto.Description;
 
             await _context.SaveChangesAsync();
 

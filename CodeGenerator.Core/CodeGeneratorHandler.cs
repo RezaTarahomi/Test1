@@ -19,7 +19,10 @@ namespace CodeGenerator.Core
         {
             // Generate the C# code
             CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-            CodeGeneratorOptions options = new CodeGeneratorOptions();
+            CodeGeneratorOptions options = new CodeGeneratorOptions
+            {
+                BlankLinesBetweenMembers = false,
+            };
             options.BracingStyle = "C";
             string generatedCode = string.Empty;
 
@@ -290,6 +293,8 @@ namespace CodeGenerator.Core
 
 ";
             string modifiedContent = code.Replace(multilineString, "");
+             modifiedContent = modifiedContent.Replace("//;", "");
+             modifiedContent = modifiedContent.Replace("System.ComponentModel.DataAnnotations.DisplayAttribute", "Display");
 
             return modifiedContent;
         }
