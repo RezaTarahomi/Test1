@@ -24,6 +24,14 @@ namespace Database.Data.Entities
         public bool IsEnum { get; set; }
         public int? EnumTypeId { get; set; }
         public EnumType EnumType { get; set; }
+       
+        public bool IsOneByOne { get; set; }
+        public bool IsNullable { get; set; }      
+      
+        public bool IsForeignKey { get; set; }        
+        public Field ForeignKey { get; set; }    
+        public int? ForeignKeyId { get; set; }
+       
 
     }
 }

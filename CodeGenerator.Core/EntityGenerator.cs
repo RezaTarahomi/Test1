@@ -24,7 +24,7 @@ namespace CodeGenerator.Core
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 
             //Add Annotation NameSpace
-            if (model.Properties.Any(x=>!string.IsNullOrEmpty(x.Description)))
+            if (model.Properties.Any(x => !string.IsNullOrEmpty(x.Description)))
             {
                 CodeNamespace blankNamespaces = new CodeNamespace();
                 blankNamespaces.Imports.Add(new CodeNamespaceImport("System.ComponentModel.DataAnnotations"));
@@ -45,18 +45,50 @@ namespace CodeGenerator.Core
                     GenerateEnum(path, property.EnumType);
                 }
 
+                if (property.IsParent)
+                {                   
+
+                    var parentPath =  Path.Combine(DirectoryHandler.GetAppRoot(), path, property.Type +".cs");
+                    var field = new ClassPropertyModel
+                    {
+                        Name = property.IsOneByOne? property.Name : property.Name.GetPluralForm(),
+                        Type = property.IsOneByOne ? property.Name : $"ICollection<{property.Name}>"
+                    };
+
+                    if (property.ParentName==property.Type)
+                    {
+                        CodeMemberField childs = new CodeMemberField($"ICollection<{property.Type}>", property.Type.GetPluralForm());
+                        childs.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
+                        childs.Name += " { get; set; }//";
+                        newClass.Members.Add(childs);
+                    }
+                    else
+                    {
+                    AddNewFieldToClass(parentPath, field);
+                    }
+
+
+                    AddConfig(model.Name, property.Name, property.Type);
+
+                }
+
                 if (property.Type == "string")
                 {
                     property.Type = "System.String";
                 }
+                if (property.Type == "bool")
+                {
+                    property.Type = "System.Boolean";
+                }
+                
                 CodeMemberField idField = new CodeMemberField(property.Type, property.Name);
                 idField.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
                 idField.Name += " { get; set; }//";
 
-                
-                if ( !string.IsNullOrEmpty(property.Description) && property.Description!="null")
+
+                if (!string.IsNullOrEmpty(property.Description) && property.Description != "null")
                 {
-                    var attr = new CodeAttributeDeclaration(new CodeTypeReference(typeof(DisplayAttribute)));                    
+                    var attr = new CodeAttributeDeclaration(new CodeTypeReference(typeof(DisplayAttribute)));
                     attr.Arguments.Add(new CodeAttributeArgument("Name", new CodePrimitiveExpression(property.Description)));
 
                     idField.CustomAttributes.Add(attr);
@@ -73,6 +105,52 @@ namespace CodeGenerator.Core
 
         }
 
+        private static void AddConfig(string entityName, string parentName, string parentClassName)
+        {
+            var path = Path.Combine(ProjectStructure.Domain, ProjectStructure.ConfigFolder);
+            var configClassPath=  Path.Combine(DirectoryHandler.GetAppRoot(), path, entityName + "Config.cs");
+
+            if (!File.Exists(configClassPath))
+                CreateConfigClass(path,entityName);
+
+           // AddConfigToClass();
+        }
+
+        private static void CreateConfigClass(string path, string entityName)
+        {
+            // Create a CodeCompileUnit
+            CodeCompileUnit compileUnit = new CodeCompileUnit();
+
+            //Add NameSpaces           
+                CodeNamespace blankNamespaces = new CodeNamespace();
+                blankNamespaces.Imports.Add(new CodeNamespaceImport(ProjectStructure.Domain+"."+ ProjectStructure.EntitiesFolder));
+                blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore"));
+                blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore.Metadata.Builders"));
+                compileUnit.Namespaces.Add(blankNamespaces);
+            
+            // Create a namespace
+            CodeNamespace codeNamespace = new CodeNamespace(path.Replace("\\", "."));
+            compileUnit.Namespaces.Add(codeNamespace);
+
+            CodeTypeDeclaration newClass = new CodeTypeDeclaration(entityName + "Config");
+            newClass.IsClass = true;
+            newClass.TypeAttributes = TypeAttributes.Public;
+
+            var basseType = $"IEntityTypeConfiguration<{entityName}>";
+            newClass.BaseTypes.Add(new CodeTypeReference(basseType));
+
+
+            CodeMemberMethod method = new CodeMemberMethod();
+            method.Name = "Configure";
+            method.Attributes = MemberAttributes.Public | MemberAttributes.Final;
+
+            method.ReturnType = new CodeTypeReference("void");
+            method.Parameters.Add(new CodeParameterDeclarationExpression($"EntityTypeBuilder<{entityName}>" ,"builder"));
+            method.Statements.Add(new CodeSnippetExpression("builder.HasKey(x => x.Id);"));
+            method.Statements.Add(new CodeSnippetExpression("builder.Property(x => x.Id).ValueGeneratedOnAdd();"));
+            newClass.Members.Add(method);
+
+        }
 
         private void GenerateVehicleClass()
         {
@@ -233,15 +311,11 @@ namespace CodeGenerator.Core
                 {
                     var field = new Field { Name = property.Name, Type = property.Type, Description = property.Description };
 
-
                     if (entitiesName.Contains(property.Type))
                     {
-                        entity.EntityParents.Add(new EntityParent
-                        {
-                            OneToOne = false,
-                            Entity = entity,
-                            Parent = entities.FirstOrDefault(x => x.Name == property.Type)
-                        });
+                        field.Parent = entities.FirstOrDefault(x => x.Name == property.Type);
+                        field.IsOneByOne = false;
+                        field.IsParent = true;
                     }
 
                     if (enumTypesName.Contains(property.Type))
@@ -252,7 +326,28 @@ namespace CodeGenerator.Core
 
                     entity.Fields.Add(field);
                 }
+
+                if (entity != null)
+                {
+                    foreach (var field in entity.Fields)
+                    {
+                        if (field.Name!="Id" && field.Name.Substring(field.Name.Length - 2, 2) == "Id")
+                        {
+                            field.IsForeignKey = true;
+                            field.ForeignKey = entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0,field.Name.Length - 2));
+                            if (field.Type.Contains("?"))
+                            {
+                                entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0,field.Name.Length - 2)).IsNullable = true;
+                            }
+                        }
+                    }
+                }
+
             }
+
+
+
+
 
             return entities;
         }
@@ -274,13 +369,13 @@ namespace CodeGenerator.Core
             foreach (var field in enumType.EnumFields)
             {
                 CodeMemberField idField = new CodeMemberField("int", field.Name);
-                idField.Attributes = MemberAttributes.Public ;
+                idField.Attributes = MemberAttributes.Public;
                 idField.InitExpression = new CodePrimitiveExpression(++value);
 
                 newClass.Members.Add(idField);
             }
 
-           
+
             codeNamespace.Types.Add(newClass);
 
             CodeGeneratorHandler.GenerateCSharpClassFile(compileUnit, enumType.Name, path);
@@ -350,6 +445,52 @@ namespace CodeGenerator.Core
 
 
             var updatedClassDeclaration = classDeclaration.AddMembers(methodDeclaration);
+
+            var updatedRoot = rootNode.ReplaceNode(classDeclaration, updatedClassDeclaration).NormalizeWhitespace();
+
+            File.WriteAllText(classPath, CodeGeneratorHandler.RemoveComment(updatedRoot.ToString()));
+        }
+
+        public static void AddNewFieldToClass(string classPath, ClassPropertyModel field)
+        {
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(classPath));
+            var rootNode = syntaxTree.GetRoot();
+
+            SyntaxTree modifiedSyntaxTree = CSharpSyntaxTree.Create((CSharpSyntaxNode)rootNode);
+
+            var compilationUnit = (CompilationUnitSyntax)modifiedSyntaxTree.GetRoot();
+
+            var namespaceDeclaration = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+
+            var classDeclaration = namespaceDeclaration?.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+
+
+            var newField = SyntaxFactory.FieldDeclaration(
+             SyntaxFactory.VariableDeclaration(
+                 SyntaxFactory.ParseTypeName(field.Type),
+                 SyntaxFactory.SingletonSeparatedList(
+                     SyntaxFactory.VariableDeclarator(
+                         SyntaxFactory.Identifier(field.Name))
+                     ))
+             .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed))
+         .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
+
+            var newProperty = SyntaxFactory.PropertyDeclaration(
+                                SyntaxFactory.ParseTypeName(field.Type),
+                                SyntaxFactory.Identifier(field.Name))
+                                .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)))
+                                .WithAccessorList(
+                                    SyntaxFactory.AccessorList(
+                                            SyntaxFactory.List(new[]
+                                            {
+                                                SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
+                                                SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                                            })
+                                        ))
+                                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);          
+
+
+            var updatedClassDeclaration = classDeclaration.AddMembers(newProperty);
 
             var updatedRoot = rootNode.ReplaceNode(classDeclaration, updatedClassDeclaration).NormalizeWhitespace();
 

@@ -12,6 +12,16 @@ namespace CodeGenerator.Web.Models
         public bool IsEnum{ get; set; }
         public bool IsParent{ get; set; }
 
+       
+        public bool IsOneByOne { get; set; }
+        public int? ParentId { get; set; }        
+        public bool IsNullable { get; set; }        
+
+
+        public bool IsForeignKey { get; set; }
+        public int? ForeignKeyId { get; set; }
+        
+
         public  EnumTypeViewModel? EnumType { get; set; }
     }
 
@@ -27,6 +37,14 @@ namespace CodeGenerator.Web.Models
         public string Type { get; set; }
         public string? Description { get; set; }
         public bool IsEnum { get; set; }
-        
+        public bool IsParent { get; set; }
+
+        public bool IsForeignKey { get; set; }
+        public bool IsOneByOne { get; set; }
+
+        public int? ParentId { get; set; }
+        public bool IsNullable { get; set; }
+
+
     }
 }

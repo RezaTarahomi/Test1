@@ -40,6 +40,22 @@ namespace CodeGenerator.Core.Services
                 }
             }
 
+            if (dto.IsParent)
+            {
+
+                var foreinKey = new Field
+                {
+                    EntityId = dto.EntityId,
+                    IsForeignKey = true,
+                    Name = dto.Name + "Id",
+                    Type = dto.IsNullable ? "int?" : "System.Int32"
+                };
+                await _context.Fields.AddAsync(foreinKey);
+                await _context.SaveChangesAsync();
+
+                dto.ForeignKeyId = foreinKey.Id;
+            }
+
             var field = new Field
             {
                 Name = dto.Name,
@@ -48,6 +64,12 @@ namespace CodeGenerator.Core.Services
                 EntityId = dto.EntityId,
                 EnumTypeId = dto.EnumTypeId > 0 ? dto.EnumTypeId : null,
                 IsEnum = dto.IsEnum,
+                IsForeignKey=dto.IsForeignKey,
+                IsNullable = dto.IsNullable,
+                ForeignKeyId = dto.ForeignKeyId,
+                IsOneByOne = dto.IsOneByOne,
+                IsParent = dto.IsParent, 
+                ParentId = dto.ParentId,
             };
 
             await _context.Fields.AddAsync(field);
@@ -110,6 +132,13 @@ namespace CodeGenerator.Core.Services
                     }
                 }
             }
+            else if(dto.IsParent)
+            {
+                var enumforeignKey = _context.Fields.Where(x => x.Id == field.ForeignKeyId).FirstOrDefault();
+                
+                enumforeignKey.Name= dto.Name + "Id";
+                enumforeignKey.Type = dto.IsNullable ? "int?" : "System.Int32";
+            }
             else
             {
                 field.IsEnum = false;
@@ -120,9 +149,11 @@ namespace CodeGenerator.Core.Services
 
             field.Name = dto.Name;
             field.Type = dto.Type;
-            field.Description = dto.Description;
-            field.EntityId = dto.EntityId;
-            field.IsEnum = dto.IsEnum;
+            field.Description = dto.Description;           
+            field.IsEnum = dto.IsEnum;            
+            field.IsNullable = dto.IsNullable;            
+            field.IsOneByOne = dto.IsOneByOne;
+            field.IsParent = dto.IsParent;  
 
             await _context.SaveChangesAsync();
 

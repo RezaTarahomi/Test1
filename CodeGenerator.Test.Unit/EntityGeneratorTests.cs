@@ -164,30 +164,11 @@ namespace CodeGenerator.Test.Unit
         public void find_entity_parent()
         {
             var entityDirectorypath = @"E:\DotNetProjects\Test\CodeGenerator\Database\Data\Entities\";
-
-            var expected = new List<Entity> 
-            {
-                new Entity 
-                {
-                    Name = "ResponseParameter" ,
-                    Fields=new List<Field>
-                    {
-                        new Field {Name ="Id", Type = "int"}
-                    },
-                    EntityParents=new List<EntityParent>
-                    {
-                        new EntityParent
-                        {
-                            Entity=new Entity{Name="Api"} , OneToOne=false
-                        }
-                    }
-                }              
-
-            };
+           
 
             List<Entity> sut = EntityGenerator.GetEntitiesFromDirectory(entityDirectorypath);
 
-            var result = sut.FirstOrDefault(x => x.Name == "ResponseParameter").EntityParents.FirstOrDefault(x=>x.Parent.Name=="Api").Parent.Name ;
+            var result = sut.FirstOrDefault(x => x.Name == "ResponseParameter").Fields.FirstOrDefault(x=>x.Parent!=null && x.Parent.Name=="Api").Parent.Name ;
 
             Assert.Equal("Api", result);
         }
@@ -249,7 +230,26 @@ namespace CodeGenerator.Test.Unit
 
         }
 
-        //[Fact]
-        //public void addParent
+        [Fact]
+        public void addParent()
+        {
+
+        }
+
+        [Fact]
+        public void add_new_field_to_class()
+        {
+            var classPath = @"E:\DotNetProjects\Test\CodeGenerator\Database\Entities\VehicleModel_Test.cs";
+            var field = new ClassPropertyModel
+            {
+                Name = "Entities",               
+                Type = "ICollection<CarCategory>"
+            };
+            EntityGenerator.AddNewFieldToClass(classPath, field);
+
+            var sut = CodeGeneratorHandler.GetClassProperties(classPath).Where(x => x.Name== "Entities").FirstOrDefault();
+             
+            Assert.NotNull(sut);
+        }
     }
 }

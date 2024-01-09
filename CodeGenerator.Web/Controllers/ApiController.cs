@@ -51,9 +51,12 @@ namespace CodeGenerator.Web.Controllers
                 var entities = EntityGenerator.GetEntitiesFromDirectory(entityDirectorypath);
                 if (entities.Any())
                 {
-               
-                await _context.Entities.AddRangeAsync(entities);
-                await _context.SaveChangesAsync();
+                    foreach (var entity in entities)
+                    {
+                        await _context.Entities.AddAsync(entity);
+                        await _context.SaveChangesAsync();
+                    }
+                
                 }
 
             }

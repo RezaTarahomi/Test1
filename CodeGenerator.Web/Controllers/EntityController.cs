@@ -94,15 +94,20 @@ namespace YourNamespace.Controllers
                     Name = x.Name,
                     Id = x.Id,
                     Path = x.Path,
-                    Description = x.Description,
-                    ParentId = x.EntityParents != null ? x.EntityParents.Where(x => x.EntityId == x.Id).Select(x => x.ParentId).FirstOrDefault() : null,
-                    IsOneToOne = x.EntityParents != null ? x.EntityParents.Where(x => x.EntityId == x.Id).Select(x => x.OneToOne).FirstOrDefault() : false,
+                    Description = x.Description,                   
                     Fields = x.Fields.Select(y => new FieldViewModel
                     {
                         Id = y.Id,
                         Name = y.Name,
                         Type = y.Type,
-                        IsParent=y.IsParent,                        
+                        IsParent=y.IsParent, 
+                        ParentId = y.ParentId,
+                        IsNullable=y.IsNullable,
+                        IsOneByOne=y.IsOneByOne,
+
+                        IsForeignKey=y.IsForeignKey,
+                        ForeignKeyId = y.ForeignKeyId,
+                        
                         Description = y.Description,
                         IsEnum = y.IsEnum,
                         EnumType = y.EnumType != null ? new EnumTypeViewModel
@@ -121,7 +126,7 @@ namespace YourNamespace.Controllers
                             }).ToList()
                         } : null
 
-                    }).ToList(),
+                    }).OrderBy(x=>x.Name).ToList(),
                 })
                 .FirstOrDefault();
 
@@ -144,32 +149,7 @@ namespace YourNamespace.Controllers
             var entity = await _context.Entities.FirstOrDefaultAsync(x => x.Id == model.Id);
             try
             {
-                await _context.Database.BeginTransactionAsync();
-
-
-                var parent = await _context.EntityParents.Where(x => x.EntityId == model.Id && x.ParentId == model.ParentId).FirstOrDefaultAsync();
-
-                if (model.ParentId > 0 && parent == null)
-                {
-                    var entityParent = new EntityParent
-                    {
-                        ParentId = model.ParentId.Value,
-                        Entity = entity,
-                        OneToOne = model.IsOneToOne,                        
-
-                    };
-                    entity.EntityParents.Add(entityParent);
-                }
-                else if (model.ParentId > 0 && parent != null)
-                {
-                    parent.ParentId = model.ParentId.Value;
-                    parent.OneToOne = model.IsOneToOne;
-                    
-                }
-                else if (model.ParentId == null && parent != null)
-                {
-                    _context.RemoveRange(parent);
-                }
+                await _context.Database.BeginTransactionAsync();               
 
                 entity.Domain = model.Domain;
                 entity.Name = model.Name;
@@ -207,18 +187,20 @@ namespace YourNamespace.Controllers
                 {
                     return Json(false);
                 }
+
+                
                 await _context.Database.BeginTransactionAsync();
 
                 if (!(model.Id > 0))
                 {
                     var dto = _maper.Map<AddFieldModel>(model);
 
-                    await _fieldService.Add(dto);
+                    await _fieldService.Add(dto);                      
                 }
                 else
                 {
                     var dto = _maper.Map<EditFieldModel>(model);
-                    await _fieldService.Edit(dto);
+                    await _fieldService.Edit(dto);                   
                 }
 
                 await _context.Database.CommitTransactionAsync();
@@ -278,6 +260,15 @@ namespace YourNamespace.Controllers
             {
                 var fields = await _context.Fields.Where(x => ids.Contains(x.Id)).ToArrayAsync();
 
+                if (fields.Any(x=>x.IsParent))
+                {
+                    var foreignKeyIds= fields.Select(x=>x.ForeignKeyId).ToArray();    
+                    var foreignKeys = await _context.Fields.Where(x => foreignKeyIds.Contains(x.Id)).ToArrayAsync();
+                    _context.RemoveRange(foreignKeys);
+                    await _context.SaveChangesAsync();
+                }
+                
+
                 _context.RemoveRange(fields);
 
                 await _context.SaveChangesAsync();
@@ -330,7 +321,7 @@ namespace YourNamespace.Controllers
             //Get Class Path
             var path = Path.Combine(ProjectStructure.Domain, ProjectStructure.EntitiesFolder);
 
-            entity.Path = Path.Combine(DirectoryHandler.GetAppRoot(), path, entity.Name);    
+            entity.Path = Path.Combine(DirectoryHandler.GetAppRoot(), path, entity.Name );    
             await _context.SaveChangesAsync();
 
 
@@ -347,9 +338,15 @@ namespace YourNamespace.Controllers
                    Type = x.Type,
                    MemberAttributes= System.CodeDom.MemberAttributes.Public,
                    IsEnum = x.IsEnum,
+                   IsParent=x.IsParent,
+                   IsNullable=x.IsNullable,
+                   IsOneByOne=x.IsOneByOne,
+                   IsForeignKey=x.IsForeignKey,
+                   ParentName=x.ParentId>0?x.Parent.Name:null,
+
                    EnumType= x.IsEnum? new EnumType
                    {
-                       Name = x.Type,
+                       Name = x.Type.Replace("?",""),
                        EnumFields = x.EnumType.EnumFields.Select(y => new EnumField
                        {
                            Name = y.Name,

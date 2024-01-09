@@ -1,4 +1,5 @@
 ﻿using CodeGenerator.Core.Dtos;
+using CodeGenerator.Core.Extensions;
 using Database.Data.Entities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -63,7 +64,7 @@ namespace CodeGenerator.Core
             var nameSpacePath = Path.Combine(
                 projectName, "Features",
                 domainName,
-                DirectoryHandler.GetPluralForm(entityName), DirectoryHandler.GetPluralForm(requestTye),
+                entityName.GetPluralForm(), requestTye.GetPluralForm(),
                 requestName);
 
             var path = Path.Combine(DirectoryHandler.GetAppRoot(), nameSpacePath);
@@ -172,9 +173,9 @@ namespace CodeGenerator.Core
         {
             return apiType switch
             {
-                ApiType.GetForGrid => $"Get{DirectoryHandler.GetPluralForm(entityName)}ForGrid",
+                ApiType.GetForGrid => $"Get{entityName.GetPluralForm()}ForGrid",
                 ApiType.GetById => $"Get{entityName}ById",
-                ApiType.GetList => $"Get{DirectoryHandler.GetPluralForm(entityName)}List",
+                ApiType.GetList => $"Get{entityName.GetPluralForm()}List",
                 ApiType.Create => "Create" + entityName,
                 ApiType.Edit => "Edit" + entityName,
                 ApiType.DeleteById => $"Delete{entityName}ById",
@@ -200,7 +201,7 @@ namespace CodeGenerator.Core
             var nameSpacePath = Path.Combine(
                 projectName, "Features",
                 domainName,
-                DirectoryHandler.GetPluralForm(entityName), DirectoryHandler.GetPluralForm(requestTye),
+                entityName.GetPluralForm(), requestTye.GetPluralForm(),
                 requestName);
 
             var path = Path.Combine(DirectoryHandler.GetAppRoot(), nameSpacePath);
@@ -323,7 +324,7 @@ namespace CodeGenerator.Core
             {
                 apiAttribute = "HttpGet";
                 mediatorRequestName = $"Get{Api.EntityName}List";
-                method.Name = DirectoryHandler.GetPluralForm(Api.EntityName);
+                method.Name = Api.EntityName.GetPluralForm();
                 hasRoute = true;
                 routeParameter = @"( ""List"" )";
             }

@@ -16,7 +16,10 @@ namespace CodeGenerator.Core.Dtos
 
         public EnumType EnumType { get; set; }
         public MemberAttributes? MemberAttributes { get; set; }
-
-        
+        public bool IsParent { get; set; }
+        public bool IsNullable { get; set; }
+        public bool IsOneByOne { get; set; }
+        public bool IsForeignKey { get; set; }
+        public string? ParentName { get; set; }
     }
 }

@@ -15,6 +15,15 @@ namespace CodeGenerator.Core.Services.Dtos
         public string Type { get; set; }
         public string? Description { get; set; }
         public bool IsEnum { get; set; }
+
+        public bool IsParent { get; set; }
+        public bool IsOneByOne { get; set; }
+        public int? ParentId { get; set; }
+
+
+        public bool IsNullable { get; set; }
+        public bool IsForeignKey { get; set; }
+        public int? ForeignKeyId { get; set; }        
     }
 
     public class EditFieldModel:AddFieldModel

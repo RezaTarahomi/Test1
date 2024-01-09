@@ -17,7 +17,7 @@ namespace Database.Data
         public DbSet<ObjectType> ObjectTypes { get; set; }
         public DbSet<Entity> Entities { get; set; }
         public DbSet<Field> Fields { get; set; }        
-        public DbSet<EntityParent> EntityParents { get; set; }
+       // public DbSet<EntityParent> EntityParents { get; set; }
         public DbSet<EnumType> EnumTypes { get; set; }
         public DbSet<EnumField> EnumFields { get; set; }
 
@@ -28,7 +28,7 @@ namespace Database.Data
             builder.ApplyConfiguration(new ObjectTypeConfig());
             builder.ApplyConfiguration(new ResponseParameterConfig());
             builder.ApplyConfiguration(new FieldConfig());
-            builder.ApplyConfiguration(new EntityParentConfig());
+           // builder.ApplyConfiguration(new EntityParentConfig());
             builder.ApplyConfiguration(new EnumFieldConfig());
         }
     }

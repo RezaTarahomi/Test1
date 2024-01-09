@@ -1,4 +1,5 @@
 ﻿using CodeGenerator.Core;
+using CodeGenerator.Core.Extensions;
 using CodeGenerator.Test.Unit.TestBuilders;
 using Database.Data.Entities;
 using FluentAssertions;
@@ -75,7 +76,7 @@ namespace CodeGenerator.Test.Unit
             var fullPath = Path.Combine(DirectoryHandler.GetAppRoot(),
                 projectName, "Features",
                 domainName,
-                DirectoryHandler.GetPluralForm(entityName), DirectoryHandler.GetPluralForm(requestType),
+                entityName.GetPluralForm(), requestType.GetPluralForm(),
                 requestName,
                 createQueryRequest + ".cs");
 
@@ -93,7 +94,7 @@ namespace CodeGenerator.Test.Unit
             var fullPath = Path.Combine(DirectoryHandler.GetAppRoot(),
                 projectName, "Features",
                 domainName,
-                DirectoryHandler.GetPluralForm(entityName), DirectoryHandler.GetPluralForm(requestType),
+                entityName.GetPluralForm(), requestType.GetPluralForm(),
                 requestName,
                 createQueryRequest + "Handler.cs");
 
@@ -251,8 +252,8 @@ namespace CodeGenerator.Test.Unit
         public void create_lis_query_handler()
         {
             var apiType = ApiType.GetList;
-            var expectedHandlerName = "Get" + DirectoryHandler.GetPluralForm(entityName) + "ListQueryHandler";
-            var expectedHandlerBase = $"IRequestHandler<{"Get" + DirectoryHandler.GetPluralForm(entityName) + "ListQuery"},List<Id_Caption>>";
+            var expectedHandlerName = "Get" + entityName.GetPluralForm() + "ListQueryHandler";
+            var expectedHandlerBase = $"IRequestHandler<{"Get" + entityName.GetPluralForm() + "ListQuery"},List<Id_Caption>>";
 
             var responseFields = new EntityBuilder()
                 .WithName("List<Id_Caption>")

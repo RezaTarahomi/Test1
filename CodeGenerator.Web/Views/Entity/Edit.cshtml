@@ -21,13 +21,21 @@
     }
 </style>
 
-<h2>Edit</h2>
+<h2>Edit <span class="text-info">@Model.Name</span></h2>
 
-<button class="btn btn-outline-primary" onclick="createFile()">CreateFile</button>
+
 <form asp-action="Edit" id="editForm">
+
+    <div class="form-group mb-3 mt-3">
+        <button type="submit" class="btn btn-success mx-2" style="width:100px!important">Save</button>
+        <button class="btn btn-outline-primary" type="button" onclick="createFile()" style="width:100px!important">CreateFile</button>
+        <a style="width:100px!important" class="btn btn-outline-secondary mx-2" href="@Url.Action("Index")">Back</a>
+
+    </div>
+    <hr />
     <div class="row form-group">
-        <h4>Entity</h4>
-        <hr />
+
+
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input asp-for="Id" hidden="hidden" class="form-control" />
 
@@ -52,11 +60,11 @@
             <select asp-for="ParentId" class="form-select" asp-items="@(new SelectList(ViewBag.Parents,"Id","Caption"))">
                 <option selected="">انتخاب کنید...</option>
             </select>
-        </div>        
-               
+        </div>
 
-        <div class="col-md-2">
-            <div class="mt-3">
+
+        <div class="col-md-2 form-group">
+            <div class="mt-2">
                 <button type="button" class="addParent btn  btn-success mx-2 mt-3"> + </button>
             </div>
         </div>
@@ -131,7 +139,7 @@
                 </div>
             </div>
 
-            <div class="col-md-12">
+            <div class="col-md-12 mt-3">
                 <table id="data-table" class="table entityTable">
                     <thead>
                         <tr>
@@ -139,8 +147,9 @@
                             <th>Name</th>
                             <th>Type</th>
                             <th>Description</th>
-                            <th>IsEnum</th>                            
-                            <th>IsParent</th>                            
+                            <th>IsEnum</th>
+                            <th>IsParent</th>
+                            <th>IsFarignKey</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -149,10 +158,38 @@
                         {
 
                             <tr class="fieldtr">
-                                <td class="fieldCheckbox" enumid="@(entity.IsEnum?entity.EnumType.Id:0)" id="@entity.Id"> <input type="checkbox" /> </td>
+                                <td class="fieldCheckbox" parentId="@(entity.IsParent?entity.ParentId:0))" enumid="@(entity.IsEnum?entity.EnumType.Id:0)" id="@entity.Id"> <input type="checkbox" /> </td>
                                 <td>@entity.Name</td>
                                 <td>@entity.Type</td>
-                                <td> @entity.Description</td>
+                                <td>
+                                    @if (entity.IsParent)
+                                    {
+                                        @if (entity.IsOneByOne)
+                                        {
+                                            <input class="isOneByOne" type="checkbox" name="IsOneByOne" checked="checked" disabled="disabled" /><span class="mx-2">One-To-One</span>
+                                        }
+                                        else
+                                        {
+                                            <input class="isOneByOne" type="checkbox" disabled="disabled" name="isOneByOne" /><span class="mx-2">One-To-One</span>
+                                        }
+                                        <br />
+                                        @if (entity.IsNullable)
+                                        {
+                                            <input class="isNullable" type="checkbox" name="isNullable" checked="checked" disabled="disabled" /><span class="mx-2">IsNullable</span>
+                                        }
+                                        else
+                                        {
+                                            <input class="isNullable" type="checkbox" disabled="disabled" name="isNullable" /><span class="mx-2">IsNullable</span>
+                                        }
+
+                                    }
+                                    else
+                                    {
+
+                                        @entity.Description
+                                    }
+
+                                </td>
                                 <td>
                                     @if (entity.IsEnum)
                                     {
@@ -168,13 +205,23 @@
                                     {
                                         <input class="isParent" type="checkbox" name="isParent" checked="checked" disabled="disabled" />
                                     }
-                                    
+
+                                </td>
+                                <td>
+                                    @if (entity.IsForeignKey)
+                                    {
+                                        <input class="isForeignKey" type="checkbox" name="isForeignKey" checked="checked" disabled="disabled" />
+                                    }
+
                                 </td>
 
                                 <td>
+                                    @if (!entity.IsForeignKey)
+                                    {
 
-                                    <button type="button" class="editButton btn btn-sm btn-outline-warning">EditRow</button>
-                                    <button type="button" class="saveButton btn btn-sm btn-outline-success" style="display:none;">Save</button>
+                                        <button type="button" class="edit@(entity.IsParent?"Parent":"")Button btn btn-sm btn-outline-warning">EditRow</button>
+                                        <button type="button" class="save@(entity.IsParent?"Parent":"")Button btn btn-sm btn-outline-success" style="display:none;">Save</button>
+                                    }
                                     @if (entity.IsEnum)
                                     {
                                         <button type="button" class="showEnum btn btn-sm btn-outline-info">EnumDetail</button>
@@ -252,11 +299,7 @@
                 </table>
             </div>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Edit" class="btn btn-success mx-2" />
-            </div>
-        </div>
+
     </div>
 </form>
 
@@ -412,7 +455,6 @@
             var type = row.find("td:eq(2)").text();
             var desc = row.find("td:eq(3)").text();
 
-
             row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + name + "'>");
             row.find("td:eq(2)").html("<input type='text' class='form-control edit-cell' value='" + type + "'>");
             row.find("td:eq(3)").html("<input type='text' class='form-control edit-cell' value='" + desc + "'>");
@@ -453,9 +495,9 @@
             var id = row.find("td:eq(0)").prop("id");
             var enumId = row.find("td:eq(0)").attr("enumid");
 
-            var name = row.find("td:eq(1) input").val();
-            var type = row.find("td:eq(2) input").val();
-            var desc = row.find("td:eq(3) input").val();
+            var name = row.find("td:eq(1) input").val() != undefined ? row.find("td:eq(1) input").val() : row.find("td:eq(1)").text() ;
+            var type = row.find("td:eq(2) input").val() != undefined ? row.find("td:eq(2) input").val() : row.find("td:eq(2)").text() ;
+            var desc = row.find("td:eq(3) input").val() != undefined ? row.find("td:eq(3) input").val() : row.find("td:eq(3)").text();;
             var isEnum = row.find("td:eq(4)").find('input').is(':checked');
 
             row.find("td:eq(1)").text(name);
@@ -477,6 +519,43 @@
             upsertField(field, $(this))
         });
 
+        $("body").on("click", '.saveParentButton', function () {
+            var row = $(this).closest("tr");
+
+            var id = row.find("td:eq(0)").prop("id");
+
+            var name = row.find("td:eq(1) input").val()!=undefined ? row.find("td:eq(1) input").val() : row.find("td:eq(1)").text();
+
+            var type = row.find("td:eq(2) input").val() != undefined ? row.find("td:eq(2) input").val() : row.find("td:eq(2)").text();
+
+            var isOneByOne = false;
+
+            isOneByOne = row.find("td:eq(3)").find('input.isOneByOne').is(':checked');
+            isNullable = row.find("td:eq(3)").find('input.isNullable').is(':checked');
+
+            row.find("td:eq(3)").find('input').prop('disabled', !$(this).prop('disabled'))
+
+
+            row.find("td:eq(1)").text(name);
+            row.find("td:eq(2)").text(type);
+
+
+            var field = {
+                id : id,
+                entityId : '@Model.Id',
+                name : name,
+                type : type,
+                isParent: true,
+                isOneByOne: isOneByOne,
+                isNullable: isNullable
+            };
+
+            //upsert Field
+
+            upsertField(field, $(this))
+
+        });
+
         function upsertField(field, element) {
 
             $.ajax({
@@ -488,7 +567,7 @@
                 success: function (data) {
 
                     element.hide();
-                    element.closest("tr").find(".editButton").show();
+                    element.closest("tr").find(".editParentButton").show();
                 }
                 ,
                 error: function (xhr, status, error) {
@@ -496,31 +575,33 @@
                 }
             });
         }
+
         $(".addParent").on("click", function () {
 
             var foreignKey = $("#ParentId option:selected").text()+"Id";
             var parentType = $("#ParentId option:selected").text();
+            var parentId = $("#ParentId").val();
             var type = 'int';
-            
 
-            addParentRowsToTable(foreignKey, type)
-            addParentRowsToTable(parentType, parentType)
+            addParentRowsToTable(foreignKey, parentId, type, true)
+            addParentRowsToTable(parentType, parentId, parentType, false)
         });
 
-        function addParentRowsToTable(foreignKey, type) {
+        function addParentRowsToTable(foreignKey, parentId, type, isForeignKey) {
             var newRow = $('<tr class="parent">');
-            var cell1 = $('<td class="fieldCheckbox" enumid="0" id="0">').html('<input type="checkbox" />');
+            var cell1 = $('<td class="fieldCheckbox" parentId="' + parentId+'" id="0">').html('<input type="checkbox" />');
             var cell2 = $('<td>').text(foreignKey);
             var cell3 = $('<td>').text(type);
-            var cell4 = $('<td>').text('');
+            var cell4 = isForeignKey ? $('<td>').text('') : $('<td>').html('<input class="isOneByOne" disabled="disabled" type="checkbox" name="IsOneByOne"  /><span class="mx-2">One-To-One</span><br /><input class="isNullable" type="checkbox" disabled="disabled" name="isNullable" /><span class="mx-2">IsNullable</span>') ;
             var cell5 = $('<td>').html('');
-            var cell6 = $('<td>').html('<input class="isParent" type="checkbox" checked="checked" name="isParent" disabled="disabled" />');
+            var cell6 = isForeignKey ? $('<td>').html(''): $('<td>').html('<input class="isParent" type="checkbox" name="isParent" checked="checked" disabled="disabled" />')
+            var cell7 = isForeignKey ? $('<td>').html(' <input class="isForeignKey" type="checkbox" name="isForeignKey" checked="checked" disabled="disabled" />') : $('<td>').html('')
             var operationCol = '<button type="button" class="editParentButton btn btn-sm btn-outline-warning">EditRow</button> ' +
                 '<button type="button" class="saveParentButton btn btn-sm btn-outline-success" >Save</button> ' +
                 '<button type="button" class="deleteButton btn btn-sm btn-outline-danger">Delete</button> '
                 ;
-            var cell7 = $('<td>').html(operationCol);
-            newRow.append(cell1, cell2, cell3, cell4, cell5, cell6, cell7);
+            var cell8 = !isForeignKey ? $('<td>').html(operationCol) : $('<td>').html('');
+            newRow.append(cell1, cell2, cell3, cell4, cell5, cell6, cell7, cell8);
             $('.entityTable').append(newRow);
         }
 
@@ -528,14 +609,22 @@
             var row = $(this).closest("tr");
 
             var foreignKey = row.find("td:eq(1)").text();
-            var type = row.find("td:eq(2)").text();           
+            var type = row.find("td:eq(2)").text();
+            var isForeignKey = row.find("td:eq(3)").text()=='';
 
-            row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + foreignKey + "'>");
-            row.find("td:eq(2)").html("<input readonly='readonly' type='text' class='form-control edit-cell' value='" + type + "'>");
-            row.find("td:eq(3)").html("<input readonly='readonly' type='text' class='form-control edit-cell' value='" + '' + "'>");            
+            if (!isForeignKey) {
+                row.find("td:eq(1)").html("<input type='text' class='form-control edit-cell' value='" + foreignKey + "'>");
+                row.find("td:eq(3)").find('input').each(function () {
+                    $(this).prop('disabled', !$(this).prop('disabled'))
+                })
+            }
+            else
+            {
+                row.find("td:eq(2)").html("<input type='text' class='form-control edit-cell' value='" + type + "'>");
+            }
 
             $(this).hide();
-            row.find(".saveButton").show();
+            row.find(".saveParentButton").show();
 
         });
 
@@ -565,6 +654,7 @@
                 type: "POST",
                 data: entity,
                 success: function (response) {
+                    location.reload()
                     // Handle the success response
                 },
                 error: function (xhr, status, error) {

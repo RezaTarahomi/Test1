@@ -1,11 +1,6 @@
 ﻿using Database.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Database.Data.Config
 {
@@ -31,6 +26,12 @@ namespace Database.Data.Config
             builder.HasOne(x => x.EnumType)
              .WithMany(x => x.Fields)
              .HasForeignKey(x => x.EnumTypeId)
+             .IsRequired(false)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(x => x.ForeignKey)
+             .WithMany()
+             .HasForeignKey(x => x.ForeignKeyId)
              .IsRequired(false)
              .OnDelete(DeleteBehavior.Restrict);
 
