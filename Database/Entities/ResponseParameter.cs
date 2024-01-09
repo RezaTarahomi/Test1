@@ -15,6 +15,6 @@ namespace Database.Entities
         public int? ObjectTypeId { get; set; }
         public int ApiId { get; set; }
         public int? EntityId { get; set; }
-        public Entity Entity { get; set; }
+      
     }
 }

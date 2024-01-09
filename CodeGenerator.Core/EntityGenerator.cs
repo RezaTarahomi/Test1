@@ -46,16 +46,16 @@ namespace CodeGenerator.Core
                 }
 
                 if (property.IsParent)
-                {                   
+                {
 
-                    var parentPath =  Path.Combine(DirectoryHandler.GetAppRoot(), path, property.Type +".cs");
+                    var parentPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, property.Type + ".cs");
                     var field = new ClassPropertyModel
                     {
-                        Name = property.IsOneByOne? property.Name : property.Name.GetPluralForm(),
+                        Name = property.IsOneByOne ? property.Name : property.Name.GetPluralForm(),
                         Type = property.IsOneByOne ? property.Name : $"ICollection<{property.Name}>"
                     };
 
-                    if (property.ParentName==property.Type)
+                    if (property.ParentName == property.Type)
                     {
                         CodeMemberField childs = new CodeMemberField($"ICollection<{property.Type}>", property.Type.GetPluralForm());
                         childs.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
@@ -64,11 +64,11 @@ namespace CodeGenerator.Core
                     }
                     else
                     {
-                    AddNewFieldToClass(parentPath, field);
+                        AddNewFieldToClass(parentPath, field);
                     }
 
 
-                    AddConfig(model.Name, property.Name, property.Type);
+                    AddConfig(model.Name, property.Name, property.Type, property.IsNullable);
 
                 }
 
@@ -80,7 +80,7 @@ namespace CodeGenerator.Core
                 {
                     property.Type = "System.Boolean";
                 }
-                
+
                 CodeMemberField idField = new CodeMemberField(property.Type, property.Name);
                 idField.Attributes = property.MemberAttributes ?? MemberAttributes.Public;
                 idField.Name += " { get; set; }//";
@@ -103,17 +103,53 @@ namespace CodeGenerator.Core
 
             CodeGeneratorHandler.GenerateCSharpClassFile(compileUnit, model.Name, path);
 
+            AddDbsetToDbcontext(model.Name);
+
         }
 
-        private static void AddConfig(string entityName, string parentName, string parentClassName)
+        private static void AddDbsetToDbcontext(string name)
+        {
+            var path = Path.Combine(ProjectStructure.Domain);
+            var dbcontextClassPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, "Data", ProjectStructure.DbContextClassName + ".cs");
+            var dbSet = new ClassPropertyModel
+            {
+                Name = name.GetPluralForm(),
+                Type = $"DbSet<{name}>"
+            };
+            AddNewFieldToClass(dbcontextClassPath, dbSet);
+        }
+
+        private static void AddConfig(string entityName, string parentName, string parentClassName, bool isNullable)
         {
             var path = Path.Combine(ProjectStructure.Domain, ProjectStructure.ConfigFolder);
-            var configClassPath=  Path.Combine(DirectoryHandler.GetAppRoot(), path, entityName + "Config.cs");
+            var configClassPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, entityName + "Config.cs");
 
             if (!File.Exists(configClassPath))
-                CreateConfigClass(path,entityName);
+            {
+                CreateConfigClass(path, entityName);
+                AddConfigToDbcontextClass(entityName);
+            }
 
-           // AddConfigToClass();
+            var statements = new List<string>();
+            var isRequired = isNullable ? "false" : "true";
+
+            statements.Add($"builder.HasOne(x => x.{parentName})");
+            statements.Add($".WithMany(x => x.{entityName.GetPluralForm()})");
+            statements.Add($".HasForeignKey(x => x.{parentName}Id)");
+            statements.Add($".IsRequired({isRequired})");
+            statements.Add($".OnDelete(DeleteBehavior.Restrict);");
+
+            AddStatementsToClassMethod(configClassPath, "Configure", statements);
+        }
+
+        private static void AddConfigToDbcontextClass(string entityName)
+        {
+            var path = Path.Combine(ProjectStructure.Domain);
+            var dbcontextClassPath = Path.Combine(DirectoryHandler.GetAppRoot(), path, "Data", ProjectStructure.DbContextClassName + ".cs");
+
+            var statements = new List<string>();
+            statements.Add($"builder.ApplyConfiguration(new {entityName}Config());");
+            AddStatementsToClassMethod(dbcontextClassPath, "OnModelCreating", statements);
         }
 
         private static void CreateConfigClass(string path, string entityName)
@@ -122,12 +158,12 @@ namespace CodeGenerator.Core
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 
             //Add NameSpaces           
-                CodeNamespace blankNamespaces = new CodeNamespace();
-                blankNamespaces.Imports.Add(new CodeNamespaceImport(ProjectStructure.Domain+"."+ ProjectStructure.EntitiesFolder));
-                blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore"));
-                blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore.Metadata.Builders"));
-                compileUnit.Namespaces.Add(blankNamespaces);
-            
+            CodeNamespace blankNamespaces = new CodeNamespace();
+            blankNamespaces.Imports.Add(new CodeNamespaceImport(ProjectStructure.Domain + "." + ProjectStructure.EntitiesFolder));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore"));
+            blankNamespaces.Imports.Add(new CodeNamespaceImport("Microsoft.EntityFrameworkCore.Metadata.Builders"));
+            compileUnit.Namespaces.Add(blankNamespaces);
+
             // Create a namespace
             CodeNamespace codeNamespace = new CodeNamespace(path.Replace("\\", "."));
             compileUnit.Namespaces.Add(codeNamespace);
@@ -144,11 +180,17 @@ namespace CodeGenerator.Core
             method.Name = "Configure";
             method.Attributes = MemberAttributes.Public | MemberAttributes.Final;
 
-            method.ReturnType = new CodeTypeReference("void");
-            method.Parameters.Add(new CodeParameterDeclarationExpression($"EntityTypeBuilder<{entityName}>" ,"builder"));
+            method.ReturnType = new CodeTypeReference(typeof(void));
+            method.Parameters.Add(new CodeParameterDeclarationExpression($"EntityTypeBuilder<{entityName}>", "builder"));
             method.Statements.Add(new CodeSnippetExpression("builder.HasKey(x => x.Id);"));
             method.Statements.Add(new CodeSnippetExpression("builder.Property(x => x.Id).ValueGeneratedOnAdd();"));
             newClass.Members.Add(method);
+
+
+            // Add the class to the namespace
+            codeNamespace.Types.Add(newClass);
+
+            CodeGeneratorHandler.GenerateCSharpClassFile(compileUnit, entityName + "Config", path);
 
         }
 
@@ -331,13 +373,13 @@ namespace CodeGenerator.Core
                 {
                     foreach (var field in entity.Fields)
                     {
-                        if (field.Name!="Id" && field.Name.Substring(field.Name.Length - 2, 2) == "Id")
+                        if (field.Name != "Id" && field.Name.Substring(field.Name.Length - 2, 2) == "Id")
                         {
                             field.IsForeignKey = true;
-                            field.ForeignKey = entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0,field.Name.Length - 2));
+                            field.ForeignKey = entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0, field.Name.Length - 2));
                             if (field.Type.Contains("?"))
                             {
-                                entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0,field.Name.Length - 2)).IsNullable = true;
+                                entity.Fields.FirstOrDefault(x => x.Name == field.Name.Substring(0, field.Name.Length - 2)).IsNullable = true;
                             }
                         }
                     }
@@ -463,17 +505,7 @@ namespace CodeGenerator.Core
             var namespaceDeclaration = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
 
             var classDeclaration = namespaceDeclaration?.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
-
-
-            var newField = SyntaxFactory.FieldDeclaration(
-             SyntaxFactory.VariableDeclaration(
-                 SyntaxFactory.ParseTypeName(field.Type),
-                 SyntaxFactory.SingletonSeparatedList(
-                     SyntaxFactory.VariableDeclarator(
-                         SyntaxFactory.Identifier(field.Name))
-                     ))
-             .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed))
-         .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
+           
 
             var newProperty = SyntaxFactory.PropertyDeclaration(
                                 SyntaxFactory.ParseTypeName(field.Type),
@@ -487,10 +519,22 @@ namespace CodeGenerator.Core
                                                 SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
                                             })
                                         ))
-                                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);          
+                                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
 
+            MethodDeclarationSyntax? firstMethod = classDeclaration.DescendantNodes()
+                  .OfType<MethodDeclarationSyntax>()
+                  .FirstOrDefault();
 
-            var updatedClassDeclaration = classDeclaration.AddMembers(newProperty);
+            ClassDeclarationSyntax updatedClassDeclaration = null; 
+            if (firstMethod != null)
+            {
+                updatedClassDeclaration = classDeclaration.InsertNodesBefore(firstMethod, new[] { newProperty });               
+            }
+            else
+            {
+                updatedClassDeclaration = classDeclaration.AddMembers(newProperty);
+                
+            }          
 
             var updatedRoot = rootNode.ReplaceNode(classDeclaration, updatedClassDeclaration).NormalizeWhitespace();
 
@@ -692,6 +736,34 @@ namespace CodeGenerator.Core
 
 
             var updatedRoot = rootNode.ReplaceNode(method, modifiedMethod).NormalizeWhitespace();
+
+            File.WriteAllText(classPath, CodeGeneratorHandler.RemoveComment(updatedRoot.ToString()));
+        }
+
+        public static void AddStatementsToClassMethod(string classPath, string methdName, List<string> statements)
+        {
+
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(classPath));
+            var rootNode = syntaxTree.GetRoot();
+
+            SyntaxTree modifiedSyntaxTree = CSharpSyntaxTree.Create((CSharpSyntaxNode)rootNode);
+
+            var compilationUnit = (CompilationUnitSyntax)modifiedSyntaxTree.GetRoot();
+
+            var namespaceDeclaration = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+
+            var classDeclaration = namespaceDeclaration?.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+
+            MethodDeclarationSyntax? firstMethod = classDeclaration.DescendantNodes()
+                   .OfType<MethodDeclarationSyntax>()
+                   .Where(x => x.Identifier.ValueText == methdName)
+                   .FirstOrDefault();
+
+            var statementsSyntax = statements.Select(statements => SyntaxFactory.ParseStatement(statements)).ToArray();
+
+            var updatedMethod = firstMethod.AddBodyStatements(statementsSyntax);
+
+            var updatedRoot = rootNode.ReplaceNode(firstMethod, updatedMethod).NormalizeWhitespace();
 
             File.WriteAllText(classPath, CodeGeneratorHandler.RemoveComment(updatedRoot.ToString()));
         }
